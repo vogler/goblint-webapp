@@ -1,5 +1,5 @@
 # About
-Web frontend for Goblint.
+Web frontend submodule for [Goblint](https://github.com/vogler/analyzer).
 
 __Server:__
 [node.js](http://nodejs.org/),

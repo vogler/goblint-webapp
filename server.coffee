@@ -16,11 +16,10 @@ app.configure ->
   app.set "views", __dirname + ""
   app.use express.bodyParser() # needed for req.files
   app.use express.methodOverride() # hidden input _method for put/del
-  # app.use require("stylus").middleware(__dirname + "/public")
   app.use require('connect-assets')()
   app.use express.static(__dirname + "/public")
 
-app.configure "development", ->
+app.configure "development", -> # default, if NODE_ENV is not set
   app.use express.errorHandler()
 
 
@@ -33,11 +32,12 @@ app.get "/", (req, res) ->
     res.render "index.jade",
       pageTitle: "Goblint"
       files: files
+      node_env: process.env.NODE_ENV ? "development"
 
 app.get "/source/:file", (req, res) ->
   file = path.join(srcPath, req.params.file)
   console.log "reading ", file
-  (fs.createReadStream file).pipe res # fast, streaming, no whitespaces
+  (fs.createReadStream file).pipe res # streams file
 
 app.get "/result/:file", (req, res) ->
   file = path.join(srcPath, req.params.file)
