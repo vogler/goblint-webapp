@@ -1,5 +1,5 @@
 doctype 5
-html
+html(ng-app="goblint")
   head
     title= pageTitle
     link(href="components/bootstrap/docs/assets/css/bootstrap.css", rel="stylesheet", media="screen")
@@ -10,7 +10,7 @@ html
     script(src="components/jquery/jquery.min.js")
     script(src="components/bootstrap/docs/assets/js/bootstrap.min.js")
     script(src="components/angular/angular.min.js")
-    //- script(src="components/angular-resource/angular-resource.js")
+    script(src="components/angular-resource/angular-resource.js")
     //- script(src="components/angular-cookies/angular-cookies.js")
     script(src="components/angular-ui/build/angular-ui.min.js")
     script(src="components/codemirror/lib/codemirror.js")
@@ -19,14 +19,11 @@ html
     script
       'use strict';
 
-      angular.module('goblint', ['ui'])
+      angular.module('goblint', ['ngResource', 'ui'])
         .config(function ($routeProvider) {
           $routeProvider
-            .when('/', {
-              //- templateUrl: '../result/01-ok.c..html',
-              //- controller: 'MainCtrl'
-            })
-            .when('/file/:file', {})
+            .when('/', {})
+            .when('/file/:file', {}) // only used if a ng-view exists :(
             .otherwise({
               redirectTo: '/'
             });
@@ -34,32 +31,40 @@ html
 
       console.log("angular-ui ok");
 
-      function SourceCtrl($scope){
+      function SourceCtrl($scope, $location, $routeParams){
         $scope.sourceModel = "select a file on the left";
         $scope.loadFile = function (f){
           $.get('source/'+f, {}, function(data){
-            $scope.sourceModel = data;
+            // without wrapping $apply, the updates are one behind
+            $scope.$apply(function(){ $scope.sourceModel = data });
             console.log("loaded file ", f);
           });
           $.get('result/'+f, {}, function(data){
             $('#result').text(data);
           });
         }
+        // gets called on every route change :(
+        // alternative would be to add a route with a controller and a templateUrl pointing to a dummy file
+        $scope.$on('$routeChangeSuccess', function(){
+          console.log($location, $routeParams);
+          if($routeParams.file) $scope.loadFile($routeParams.file);
+        });
       }
 
-  body(ng-app="goblint")
+  body
     include ie.fail.html
     .container-fluid(ng-controller="SourceCtrl")
       .row-fluid
         .span2
           ul.unstyled
             each f in files
-              li: a(href="", ng-click="loadFile('"+f+"')")= f
+              li: a(href="#/file/"+f)= f
         .span10
           .toolbar
             a.btn: i.icon-hdd
           textarea#source(ui-codemirror="{mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, theme:'monokai'}", ng-model="sourceModel")
           textarea#result
+          div(ng-view)
     if node_env=="development"
       // livereload snippet
       //- TODO: only works sometimes
