@@ -1,0 +1,1115 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"text",
+				"textarea"
+			],
+			[
+				"st",
+				"stmts"
+			],
+			[
+				"print",
+				"print_endline"
+			],
+			[
+				"Par",
+				"Parse_error"
+			],
+			[
+				"open",
+				"open_write"
+			],
+			[
+				"dir_an",
+				"dir_annot_old"
+			],
+			[
+				"file",
+				"filename_annot"
+			],
+			[
+				"path",
+				"path_annot"
+			],
+			[
+				"Int",
+				"Int64"
+			],
+			[
+				"records",
+				"recordsList"
+			],
+			[
+				"find",
+				"findRecords"
+			],
+			[
+				"filter",
+				"filterValues"
+			],
+			[
+				"may",
+				"mayOpen"
+			],
+			[
+				"call",
+				"callStack"
+			],
+			[
+				"fin",
+				"findOption"
+			],
+			[
+				"stack",
+				"stack_var"
+			],
+			[
+				"return",
+				"return_var"
+			],
+			[
+				"report",
+				"report_"
+			],
+			[
+				"for",
+				"for_all"
+			],
+			[
+				"toString",
+				"toStringRecord"
+			],
+			[
+				"ret",
+				"return_var"
+			],
+			[
+				"loc",
+				"loc_stack"
+			],
+			[
+				"var",
+				"varinfo"
+			],
+			[
+				"uncl",
+				"unclosedMap"
+			],
+			[
+				"Base",
+				"Basetype"
+			],
+			[
+				"quer",
+				"query_lv"
+			],
+			[
+				"newhtml",
+				"newhtml"
+			],
+			[
+				"Ser",
+				"Server.start	server-start"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "server.coffee",
+			"settings":
+			{
+				"buffer_size": 6095,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "index.jade",
+			"settings":
+			{
+				"buffer_size": 2657,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "assets/js/index.js",
+			"settings":
+			{
+				"buffer_size": 9867,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "assets/js/fixes.js",
+			"settings":
+			{
+				"buffer_size": 978,
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "Packages/Makefile/Make.sublime-build",
+	"command_palette":
+	{
+		"height": 332.0,
+		"selected_items":
+		[
+			[
+				"packa",
+				"Package Control: List Packages"
+			],
+			[
+				"insta",
+				"Package Control: Install Package"
+			],
+			[
+				"git st",
+				"Git: Status"
+			],
+			[
+				"git log",
+				"Git: Log All"
+			],
+			[
+				"git",
+				"Git: Diff Tool All"
+			],
+			[
+				"inst",
+				"Package Control: Install Package"
+			],
+			[
+				"remov",
+				"Package Control: Remove Package"
+			],
+			[
+				"list pa",
+				"Package Control: List Packages"
+			],
+			[
+				"github",
+				"Github: Open File"
+			],
+			[
+				"gith",
+				"Github: Open File"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"enab",
+				"Package Control: Enable Package"
+			],
+			[
+				"list",
+				"Package Control: List Packages"
+			],
+			[
+				"key",
+				"Preferences: Key Bindings - User"
+			],
+			[
+				"enable",
+				"Package Control: Enable Package"
+			],
+			[
+				"disab",
+				"Package Control: Disable Package"
+			],
+			[
+				"remo",
+				"Package Control: Remove Package"
+			],
+			[
+				"remove",
+				"Package Control: Remove Package"
+			],
+			[
+				"split",
+				"Preferences: SplitScreen-Resizer Key Bindings – Default"
+			],
+			[
+				"list p",
+				"Package Control: List Packages"
+			],
+			[
+				"package",
+				"Package Control: Install Package"
+			],
+			[
+				"pacak",
+				"Package Control: List Packages"
+			],
+			[
+				"list pack",
+				"Package Control: List Packages"
+			],
+			[
+				"user",
+				"Preferences: Settings - User"
+			],
+			[
+				"packag",
+				"Package Control: Disable Package"
+			],
+			[
+				"new fil",
+				"File: New View into File"
+			],
+			[
+				"fetch",
+				"Fetch: Package"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"keybi",
+				"Preferences: Key Bindings - Default"
+			]
+		],
+		"width": 503.0
+	},
+	"console":
+	{
+		"height": 264.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/home/ralf/analyzer/webapp/assets/js/fixes.js",
+		"/home/ralf/.config/sublime-text-2/Packages/LiveReload/LiveReload.sublime-settings",
+		"/home/ralf/analyzer/yo-webapp/node_modules/grunt-contrib-livereload/docs/livereload-examples.md",
+		"/home/ralf/analyzer/yo-webapp/node_modules/grunt-contrib-livereload/docs/livereload-options.md",
+		"/home/ralf/analyzer/yo-webapp/node_modules/grunt-contrib-livereload/docs/livereload-overview.md",
+		"/home/ralf/analyzer/webapp/ie.fail",
+		"/home/ralf/analyzer/yo-webapp/app/index.html",
+		"/home/ralf/analyzer/yo-webapp/app/views/main.html",
+		"/home/ralf/analyzer/webapp/assets/css/index.styl",
+		"/home/ralf/analyzer/webapp/package.json",
+		"/home/ralf/analyzer/tests/regression/17-file/01-ok.c",
+		"/home/ralf/analyzer/src/util/messages.ml",
+		"/home/ralf/analyzer/src/maingoblint.ml",
+		"/home/ralf/analyzer/scripts/set_version.sh",
+		"/home/ralf/analyzer/src/version.ml",
+		"/home/ralf/analyzer/README.md",
+		"/home/ralf/analyzer/scripts/install_script.sh",
+		"/home/ralf/analyzer/ma.sublime-project",
+		"/home/ralf/analyzer/.gitignore",
+		"/home/ralf/analyzer/result/01-ok.c_data/analysis0.html",
+		"/home/ralf/analyzer/obj/.depend/.gitignore",
+		"/home/ralf/analyzer/src/util/html_template/readme.txt",
+		"/home/ralf/analyzer/make.sh",
+		"/home/ralf/analyzer/src/util/jsonLexer.ml",
+		"/home/ralf/.config/sublime-text-2/Packages/User/Default (Linux).sublime-keymap",
+		"/home/ralf/analyzer/tests/file.c",
+		"/home/ralf/analyzer/src/spec/Exc.ml",
+		"/home/ralf/analyzer/src/Exc.ml",
+		"/home/ralf/analyzer/src/spec/file.dot",
+		"/home/ralf/analyzer/src/spec/samples/toy_lang.mll",
+		"/home/ralf/analyzer/src/spec/file.spec",
+		"/home/ralf/analyzer/src/util/html_template/js_template.ml",
+		"/home/ralf/analyzer/src/cdomains/intDomain.ml",
+		"/home/ralf/analyzer/src/domains/queries.ml",
+		"/home/ralf/analyzer/src/domains/setDomain.ml",
+		"/home/ralf/analyzer/src/cdomains/lval.ml",
+		"/home/ralf/analyzer/src/cdomains/addressDomain.ml",
+		"/home/ralf/analyzer/src/analyses/base.ml",
+		"/home/ralf/.config/sublime-text-2/Packages/SplitScreen-Resizer/Default (Linux).sublime-keymap",
+		"/home/ralf/.config/sublime-text-2/Packages/Package Control/Package Control.sublime-settings",
+		"/home/ralf/.config/sublime-text-2/Packages/Edit History/Edit History.sublime-settings",
+		"/home/ralf/.config/sublime-text-2/Packages/User/Edit History.sublime-settings",
+		"/home/ralf/.config/sublime-text-2/Packages/User/Distraction Free.sublime-settings",
+		"/home/ralf/.config/sublime-text-2/Packages/User/JSON.sublime-settings",
+		"/home/ralf/.config/sublime-text-2/Packages/User/Preferences.sublime-settings",
+		"/home/ralf/.config/sublime-text-2/Packages/Default/Preferences.sublime-settings",
+		"/home/ralf/.config/sublime-text-2/Packages/Default/Default (Linux).sublime-keymap",
+		"/home/ralf/.config/sublime-text-2/Packages/User/Package Control.sublime-settings",
+		"/home/ralf/analyzer/tests/regression/17-file/26.c",
+		"/home/ralf/analyzer/src/cdomains/valueDomain.ml",
+		"/home/ralf/.config/sublime-text-2/Packages/User/Fetch.sublime-settings",
+		"/home/ralf/analyzer/tests/regression/17-file/25-mem-ok.c",
+		"/home/ralf/.config/sublime-text-2/Packages/User/ocaml_annot.py",
+		"/home/ralf/analyzer/src/domains/printable.ml",
+		"/home/ralf/analyzer/tests/f_wstr.c",
+		"/home/ralf/analyzer/tests/regression/17-file/24_f_wstr.c",
+		"/home/ralf/analyzer/tests/regression/17-file/18-myfopen-arg.c",
+		"/home/ralf/analyzer/tests/regression/17-file/17-myfopen.c",
+		"/home/ralf/test/annot/test.ml",
+		"/home/ralf/sublime/OCaml/ocaml_annot.py",
+		"/home/ralf/.config/sublime-text-2/Packages/User/ocaml.py",
+		"/home/ralf/.config/sublime-text-2/Packages/User/ocaml.sublime-keymap",
+		"/home/ralf/test.ml",
+		"/home/ralf/analyzer/src/spec/parser.mly",
+		"/home/ralf/analyzer/src/util/oilLexer.mll",
+		"/home/ralf/analyzer/src/util/oilParser.mly",
+		"/home/ralf/analyzer/src/spec/lexer.mll",
+		"/home/ralf/analyzer/src/util/jsonParser.mly",
+		"/home/ralf/analyzer/src/util/jsonLexer.mll",
+		"/home/ralf/analyzer/src/cdomains/regionDomain.ml",
+		"/home/ralf/analyzer/src/framework/analyses.ml",
+		"/home/ralf/analyzer/src/domains/baseDomain.ml",
+		"/home/ralf/analyzer/src/cdomains/musteqDomain.ml",
+		"/home/ralf/analyzer/src/analyses/libraryFunctions.ml",
+		"/home/ralf/analyzer/src/analyses/fileUse.ml",
+		"/home/ralf/analyzer/tests/regression/17-file/15-var-switch.c",
+		"/home/ralf/analyzer/tests/regression/17-file/14-ptr-arith-close.c",
+		"/home/ralf/analyzer/tests/regression/17-file/13-ptr-arith-ok.c",
+		"/home/ralf/analyzer/tests/regression/17-file/12-2close-if.c",
+		"/home/ralf/analyzer/src/domains/mapDomain.ml",
+		"/home/ralf/analyzer/src/spec/calc/parser.mly",
+		"/home/ralf/analyzer/src/spec/lang.mll",
+		"/home/ralf/analyzer/tests/regression.py",
+		"/home/ralf/analyzer/src/domains/lattice.ml",
+		"/home/ralf/analyzer/spec/lexer.mll",
+		"/home/ralf/analyzer/spec/calc.ml",
+		"/home/ralf/analyzer/spec/parser.mly",
+		"/home/ralf/analyzer/monmake.sh",
+		"/home/ralf/analyzer/src/analyses/mutex.ml",
+		"/home/ralf/analyzer/tests/regression/17-file/21-for-i.c",
+		"/home/ralf/analyzer/tests/regression/17-file/03-if-close.c",
+		"/home/ralf/analyzer/regression.py",
+		"/home/ralf/analyzer/tests/regression/17-file/19-if-close-else.c",
+		"/home/ralf/analyzer/tests/regression/17-file/16-var-reuse-close.c",
+		"/home/ralf/analyzer/tests/regression/17-file/11-2if.c",
+		"/home/ralf/analyzer/tests/regression/17-file/20-loop-close.c",
+		"/home/ralf/analyzer/tests/regression/17-file/09-inf-loop-no-close.c",
+		"/home/ralf/analyzer/tests/regression/17-file/06-2open.c",
+		"/home/ralf/analyzer/tests/regression/17-file/07-2close.c",
+		"/home/ralf/analyzer/tests/regression/17-file/05-open-mode.c",
+		"/home/ralf/analyzer/tests/regression/17-file/04-no-open.c",
+		"/home/ralf/analyzer/fileTestAll.sh",
+		"/home/ralf/analyzer/regression.sh",
+		"/home/ralf/analyzer/test.py",
+		"/home/ralf/.config/sublime-text-2/Packages/SublimeLinter/sublimelinter/modules/base_linter.py",
+		"/home/ralf/.config/sublime-text-2/Packages/SublimeLinter/sublimelinter/modules/ocaml.py",
+		"/home/ralf/.config/sublime-text-2/Packages/SublimeLinter/sublimelinter/modules/coffeescript.py",
+		"/home/ralf/.config/sublime-text-2/Packages/SublimeLinter/sublimelinter/modules/coffeescript.pyc",
+		"/home/ralf/.config/sublime-text-2/Packages/Default/mark.py",
+		"/home/ralf/.config/sublime-text-2/Packages/Default/goto_line.py",
+		"/home/ralf/.config/sublime-text-2/Packages/Default/duplicate_line.py",
+		"/home/ralf/.config/sublime-text-2/Packages/Default/font.py",
+		"/home/ralf/.config/sublime-text-2/Packages/Default/duplicate_line.pyc",
+		"/home/ralf/.config/sublime-text-2/Packages/Default/exec.py",
+		"/home/ralf/.config/sublime-text-2/Packages/Default/echo.py",
+		"/home/ralf/analyzer/src/util/goblintutil.ml",
+		"/home/ralf/analyzer/fileTest.sh",
+		"/home/ralf/analyzer/src/util/json.ml",
+		"/home/ralf/analyzer/tests/regression/17-file/20-loop.c",
+		"/home/ralf/analyzer/src/cdomains/fileDomain.ml",
+		"/home/ralf/analyzer/src/util/htmldump.ml",
+		"/home/ralf/analyzer/src/util/messages.mli",
+		"/home/ralf/analyzer/tests/bench_result/.gitignore",
+		"/home/ralf/analyzer/src/domains/glob.ml",
+		"/home/ralf/analyzer/src/analyses/access.ml",
+		"/home/ralf/analyzer/src/cdomains/basetype.ml",
+		"/home/ralf/analyzer/src/analyses/varEq.ml",
+		"/home/ralf/analyzer/src/analyses/mCP.ml"
+	],
+	"find":
+	{
+		"height": 34.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"filePath",
+			"p",
+			"res.",
+			"$.get",
+			"pathMaps",
+			"sets",
+			"line",
+			"4",
+			" [",
+			"label=\"",
+			"]",
+			"[label=",
+			";",
+			"!\"];",
+			"opened",
+			"ID",
+			"pretty",
+			"file",
+			"new_file",
+			"fp[1]",
+			"d_",
+			"lval2var",
+			"plaincil",
+			"warn",
+			"topped",
+			"ls",
+			"str",
+			"str_ptr",
+			"str",
+			"VD",
+			"remove",
+			"fold",
+			"TODO",
+			"basename",
+			"hit",
+			"p",
+			"`Str",
+			"open",
+			"short",
+			"query",
+			"eval_",
+			"query_",
+			"query_rv",
+			"eval_",
+			"sprintf",
+			"expr",
+			"M.",
+			"callStack",
+			"with",
+			"PSet",
+			"rval",
+			"vars",
+			"recordList",
+			"sep",
+			"PSet",
+			"List",
+			"and",
+			"equals",
+			"filename",
+			"map",
+			"tag",
+			"unique_cmp",
+			"BatList",
+			"Dom.V",
+			"f11",
+			"f10",
+			"may",
+			"return_var",
+			"sensiti",
+			"path",
+			"S",
+			"return_varstore",
+			"dummyFunDec",
+			"f",
+			"enter_func",
+			"branch",
+			"join",
+			"meet",
+			"with",
+			"PrintSimple",
+			"exp",
+			"map",
+			"Prod",
+			"prod",
+			"map",
+			"match",
+			"filter",
+			"is_bot",
+			"ToppedSet",
+			"enter_func",
+			"MapDomain",
+			"variables",
+			"Reachable",
+			"revers",
+			"Make",
+			"(**",
+			"store",
+			"branch",
+			"ReachableFrom",
+			"branch",
+			"  \n",
+			"bat",
+			"htmlGlobalWarningList",
+			"loc",
+			"print",
+			"docList",
+			"htmlGlobalWarningList",
+			"MayPoint",
+			"EqualSet",
+			"A.",
+			"Messages",
+			"assert",
+			"Messages",
+			"vname",
+			"point",
+			"cast",
+			"diff",
+			"iter",
+			"printLval",
+			"rval",
+			"exp",
+			"exp String",
+			"printExp",
+			"AccValSet",
+			"OffsMap",
+			"report_race",
+			"acc_map",
+			"report_race"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 1,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "server.coffee",
+					"settings":
+					{
+						"buffer_size": 6095,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1230,
+								1230
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/CoffeeScript/CoffeeScript.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 225.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "index.jade",
+					"settings":
+					{
+						"buffer_size": 2657,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2073,
+								2073
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Jade/Syntaxes/Jade.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true,
+							"word_wrap": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 555.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "assets/js/index.js",
+					"settings":
+					{
+						"buffer_size": 9867,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								4949,
+								4949
+							],
+							[
+								5080,
+								5080
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 2157.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "assets/js/fixes.js",
+					"settings":
+					{
+						"buffer_size": 978,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"tab_size": 2,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 31.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 254.0
+	},
+	"output.git":
+	{
+		"height": 100.0
+	},
+	"replace":
+	{
+		"height": 0.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+			[
+				"fix",
+				"assets/js/fixes.js"
+			],
+			[
+				"inde",
+				"assets/js/index.js"
+			],
+			[
+				"01",
+				"17-file/01-ok.c"
+			],
+			[
+				"version",
+				"analyzer/scripts/set_version.sh"
+			],
+			[
+				"maing",
+				"src/maingoblint.ml"
+			],
+			[
+				"messa",
+				"src/util/messages.ml"
+			],
+			[
+				"re",
+				"analyzer/README.md"
+			],
+			[
+				"read",
+				"analyzer/README.md"
+			],
+			[
+				"install_s",
+				"analyzer/scripts/install_script.sh"
+			],
+			[
+				".gi",
+				"analyzer/.gitignore"
+			],
+			[
+				"redme",
+				"src/util/html_template/readme.txt"
+			],
+			[
+				".dot",
+				"src/spec/file.dot"
+			],
+			[
+				"jsonl",
+				"src/util/jsonLexer.mll"
+			],
+			[
+				"json",
+				"src/util/jsonLexer.ml"
+			],
+			[
+				".c",
+				"tests/file.c"
+			],
+			[
+				"exc",
+				"src/spec/Exc.ml"
+			],
+			[
+				"spe",
+				"src/spec/file.spec"
+			],
+			[
+				"jst",
+				"src/util/html_template/js_template.ml"
+			],
+			[
+				"mess",
+				"src/util/messages.ml"
+			],
+			[
+				"file.c",
+				"tests/file.c"
+			],
+			[
+				"intdom",
+				"src/cdomains/intDomain.ml"
+			],
+			[
+				"print",
+				"src/domains/printable.ml"
+			],
+			[
+				"setdom",
+				"src/domains/setDomain.ml"
+			],
+			[
+				"17",
+				"17-file/17-myfopen.c"
+			],
+			[
+				"valu",
+				"src/cdomains/valueDomain.ml"
+			],
+			[
+				"lval",
+				"src/cdomains/lval.ml"
+			],
+			[
+				"addre",
+				"src/cdomains/addressDomain.ml"
+			],
+			[
+				"que",
+				"src/domains/queries.ml"
+			],
+			[
+				"18",
+				"17-file/18-myfopen-arg.c"
+			],
+			[
+				"anal",
+				"src/framework/analyses.ml"
+			],
+			[
+				"value",
+				"src/cdomains/valueDomain.ml"
+			],
+			[
+				"quer",
+				"src/domains/queries.ml"
+			],
+			[
+				"basedoma",
+				"src/domains/baseDomain.ml"
+			],
+			[
+				"fileus",
+				"src/analyses/fileUse.ml"
+			],
+			[
+				"15",
+				"17-file/15-var-switch.c"
+			],
+			[
+				"13-",
+				"17-file/13-ptr-arith-ok.c"
+			],
+			[
+				"14",
+				"17-file/14-ptr-arith-close.c"
+			],
+			[
+				"14-",
+				"17-file/14-ptr-arith-close.c"
+			],
+			[
+				"14-p",
+				"17-file/14-ptr-arith-close.c"
+			],
+			[
+				"file.sp",
+				"src/spec/file.spec"
+			],
+			[
+				"oil",
+				"src/util/oilLexer.mll"
+			],
+			[
+				"oilp",
+				"src/util/oilParser.mly"
+			],
+			[
+				"mly",
+				"src/util/jsonParser.mly"
+			],
+			[
+				"mll",
+				"src/util/jsonLexer.mll"
+			],
+			[
+				"regr",
+				"tests/regression.py"
+			],
+			[
+				"latti",
+				"src/domains/lattice.ml"
+			],
+			[
+				"mapdom",
+				"src/domains/mapDomain.ml"
+			],
+			[
+				"mut",
+				"src/analyses/mutex.ml"
+			],
+			[
+				"util",
+				"src/util/goblintutil.ml"
+			],
+			[
+				"filedoma",
+				"src/cdomains/fileDomain.ml"
+			],
+			[
+				"setdomain",
+				"src/domains/setDomain.ml"
+			],
+			[
+				"mutex",
+				"src/analyses/mutex.ml"
+			],
+			[
+				"base",
+				"src/analyses/base.ml"
+			],
+			[
+				"html",
+				"src/util/htmldump.ml"
+			],
+			[
+				"maingo",
+				"src/maingoblint.ml"
+			],
+			[
+				"glo",
+				"src/domains/glob.ml"
+			],
+			[
+				"int",
+				"src/cdomains/intDomain.ml"
+			],
+			[
+				"set",
+				"src/domains/setDomain.ml"
+			],
+			[
+				"printa",
+				"src/domains/printable.ml"
+			],
+			[
+				"latt",
+				"src/domains/lattice.ml"
+			],
+			[
+				"map",
+				"src/domains/mapDomain.ml"
+			],
+			[
+				"lattice",
+				"src/domains/lattice.ml"
+			],
+			[
+				"baset",
+				"src/cdomains/basetype.ml"
+			],
+			[
+				"glob",
+				"src/domains/glob.ml"
+			],
+			[
+				"basedom",
+				"src/domains/baseDomain.ml"
+			],
+			[
+				"lattic",
+				"src/domains/lattice.ml"
+			],
+			[
+				"bas",
+				"src/analyses/base.ml"
+			],
+			[
+				"ana",
+				"src/framework/analyses.ml"
+			],
+			[
+				"based",
+				"src/domains/baseDomain.ml"
+			],
+			[
+				"basedo",
+				"src/domains/baseDomain.ml"
+			],
+			[
+				"conc",
+				"src/cdomains/concDomain.ml"
+			],
+			[
+				"flag",
+				"src/analyses/mTFlag.ml"
+			],
+			[
+				"reort",
+				"src/util/report.ml"
+			],
+			[
+				"report",
+				"src/util/report.ml"
+			],
+			[
+				"scri",
+				"src/util/html_template/script.ml"
+			],
+			[
+				"htmlu",
+				"src/util/htmlutil.ml"
+			],
+			[
+				"mute",
+				"src/analyses/mutex.ml"
+			],
+			[
+				"varset",
+				"tests/regression/16-relinv/01-defaultAppWorkstation/os/tpl_os_event.h"
+			],
+			[
+				"mc",
+				"src/analyses/mCP.ml"
+			],
+			[
+				"valuedo",
+				"src/cdomains/valueDomain.ml"
+			],
+			[
+				"latic",
+				"src/domains/lattice.ml"
+			],
+			[
+				"filedom",
+				"src/cdomains/fileDomain.ml"
+			],
+			[
+				"mcp",
+				"src/analyses/mCP.ml"
+			],
+			[
+				"",
+				"hello.opa"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"selected_items":
+		[
+			[
+				"",
+				"/home/ralf/IDP/idp.sublime-project"
+			]
+		],
+		"width": 380.0
+	},
+	"show_minimap": true,
+	"show_open_files": false,
+	"show_tabs": true,
+	"side_bar_visible": false,
+	"side_bar_width": 147.0,
+	"status_bar_visible": true
+}
