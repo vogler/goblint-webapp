@@ -5,7 +5,7 @@ html(ng-app="goblint")
     link(href="components/bootstrap/docs/assets/css/bootstrap.css", rel="stylesheet", media="screen")
     link(href="components/angular-ui/build/angular-ui.min.css", rel="stylesheet")
     link(href="components/codemirror/lib/codemirror.css", rel="stylesheet")
-    link(href="components/codemirror/theme/monokai.css", rel="stylesheet")
+    //- link(href="components/codemirror/theme/monokai.css", rel="stylesheet")
     != css('index')
     script(src="components/jquery/jquery.min.js")
     script(src="components/bootstrap/docs/assets/js/bootstrap.min.js")
@@ -16,30 +16,44 @@ html(ng-app="goblint")
     script(src="components/codemirror/lib/codemirror.js")
     script(src="components/codemirror/mode/clike/clike.js")
     script(src="components/codemirror/addon/edit/matchbrackets.js")
+    script(src="components/codemirror/addon/edit/closebrackets.js")
+    script(src="components/codemirror/addon/search/searchcursor.js")
+    script(src="components/codemirror/addon/search/match-highlighter.js")
+    style
+      .CodeMirror-focused .cm-matchhighlight {
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFklEQVQI12NgYGBgkKzc8x9CMDAwAAAmhwSbidEoSQAAAABJRU5ErkJggg==);
+        background-position: bottom;
+        background-repeat: repeat-x;
+      }
+    script(src="components/codemirror/addon/display/placeholder.js")
     script
       'use strict';
 
-      angular.module('goblint', ['ngResource', 'ui'])
-        .config(function ($routeProvider) {
+      var app = angular.module('goblint', ['ngResource', 'ui']);
+      app.config(function ($routeProvider, $locationProvider) {
           $routeProvider
             .when('/', {})
             .when('/file/:file', {}) // only used if a ng-view exists :(
             .otherwise({
               redirectTo: '/'
             });
+            //- $locationProvider.html5Mode(true); // html5 pushState
+        })
+        .value('ui.config', {
+          jq: {tooltip: {placement: 'right'}}
         });
 
       console.log("angular-ui ok");
 
       function SourceCtrl($scope, $location, $routeParams){
-        $scope.sourceModel = "select a file on the left";
+        //- $scope.sourceModel = "Select a file on the left...";
         $scope.loadFile = function (f){
-          $.get('source/'+f, {}, function(data){
+          $.get('/source/'+f, {}, function(data){
             // without wrapping $apply, the updates are one behind
             $scope.$apply(function(){ $scope.sourceModel = data });
             console.log("loaded file ", f);
           });
-          $.get('result/'+f, {}, function(data){
+          $.get('/result/'+f, {}, function(data){
             $('#result').text(data);
           });
         }
@@ -47,8 +61,24 @@ html(ng-app="goblint")
         // alternative would be to add a route with a controller and a templateUrl pointing to a dummy file
         $scope.$on('$routeChangeSuccess', function(){
           console.log($location, $routeParams);
-          if($routeParams.file) $scope.loadFile($routeParams.file);
+          if($routeParams.file){
+            $scope.loadFile($routeParams.file);
+            selectFile($routeParams.file);
+          }
         });
+      }
+
+      function selectFile(file){
+        $('#files a').removeClass('label');
+        $("#files a:contains('"+file+"')").toggleClass('label');
+      }
+
+      function selectTheme() {
+        //- var editor = CodeMirror.fromTextArea($("#source"));
+        var theme = $("#theme").val();
+        $(document.head).append($("<link/>").attr({rel: "stylesheet", href: "components/codemirror/theme/"+theme+".css"}));
+        //- editor.setOption("theme", theme);
+        CodeMirror.defaults.theme = theme;
       }
 
   body
@@ -56,13 +86,44 @@ html(ng-app="goblint")
     .container-fluid(ng-controller="SourceCtrl")
       .row-fluid
         .span2
-          ul.unstyled
+          ul#files.unstyled
             each f in files
               li: a(href="#/file/"+f)= f
         .span10
-          .toolbar
-            a.btn: i.icon-hdd
-          textarea#source(ui-codemirror="{mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, theme:'monokai'}", ng-model="sourceModel")
+          .btn-toolbar
+            .btn-group
+              a.btn(title="save", ui-jq="tooltip"): i.icon-hdd
+              a.btn(title="rename", ui-jq="tooltip"): i.icon-pencil
+              a.btn(title="delete", ui-jq="tooltip"): i.icon-trash
+          span Select a theme:
+          select#theme(onchange="selectTheme()")
+              option default
+              option ambiance
+              option blackboard
+              option cobalt
+              option eclipse
+              option elegant
+              option erlang-dark
+              option lesser-dark
+              option midnight
+              option monokai
+              option neat
+              option night
+              option rubyblue
+              option solarized dark
+              option solarized light
+              option twilight
+              option vibrant-ink
+              option xq-dark
+              option xq-light
+          textarea#source(ui-codemirror="{mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default'}", ng-model="sourceModel", placeholder="Select a file on the left...")
+          div
+            span.label.label-success
+              i.icon-ok.icon-white
+              |  no warnings
+            span.label.label-warning
+              i.icon-warning-sign.icon-white
+              |  3 warnings
           textarea#result
           div(ng-view)
     if node_env=="development"
