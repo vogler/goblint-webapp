@@ -49,8 +49,7 @@ html(ng-app="goblint")
         //- $scope.sourceModel = "Select a file on the left...";
         $scope.loadFile = function (f){
           $.get('/source/'+f, {}, function(data){
-            // without wrapping $apply, the updates are one behind
-            $scope.$apply(function(){ $scope.sourceModel = data });
+            editor.setValue(data);
             console.log("loaded file ", f);
           });
           $.get('/result/'+f, {}, function(data){
@@ -60,7 +59,7 @@ html(ng-app="goblint")
         // gets called on every route change :(
         // alternative would be to add a route with a controller and a templateUrl pointing to a dummy file
         $scope.$on('$routeChangeSuccess', function(){
-          console.log($location, $routeParams);
+          console.log($routeParams);
           if($routeParams.file){
             $scope.loadFile($routeParams.file);
             selectFile($routeParams.file);
@@ -74,11 +73,11 @@ html(ng-app="goblint")
       }
 
       function selectTheme() {
-        //- var editor = CodeMirror.fromTextArea($("#source"));
         var theme = $("#theme").val();
-        $(document.head).append($("<link/>").attr({rel: "stylesheet", href: "components/codemirror/theme/"+theme+".css"}));
-        //- editor.setOption("theme", theme);
-        CodeMirror.defaults.theme = theme;
+        var file = theme.split(' ')[0]+'.css';
+        if(theme!="default" && !$("head link[rel='stylesheet'][href*='"+file+"']").length) // no default.css && file not added yet
+          $(document.head).append($("<link/>").attr({rel: "stylesheet", href: "components/codemirror/theme/"+file}));
+        editor.setOption("theme", theme);
       }
 
   body
@@ -116,7 +115,11 @@ html(ng-app="goblint")
               option vibrant-ink
               option xq-dark
               option xq-light
-          textarea#source(ui-codemirror="{mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default'}", ng-model="sourceModel", placeholder="Select a file on the left...")
+          textarea#source(placeholder="Select a file on the left...")
+          script
+            var editor = CodeMirror.fromTextArea(document.getElementById('source'), {
+              mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default'
+            });
           div
             span.label.label-success
               i.icon-ok.icon-white
