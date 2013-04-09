@@ -50,12 +50,15 @@ html(ng-app="goblint")
         $scope.loadFile = function (f){
           $.get('/source/'+f, {}, function(data){
             editor.setValue(data);
-            console.log("loaded file ", f);
+            editor.clearHistory();
+            editor.markClean();
+            valueChanged();
+            console.log("loaded file", f);
           });
           $.get('/result/'+f, {}, function(data){
             $('#result').text(data);
           });
-        }
+        };
         // gets called on every route change :(
         // alternative would be to add a route with a controller and a templateUrl pointing to a dummy file
         $scope.$on('$routeChangeSuccess', function(){
@@ -65,6 +68,14 @@ html(ng-app="goblint")
             selectFile($routeParams.file);
           }
         });
+
+        $scope.saveFile = function saveFile(){
+          $.post('/source/'+$routeParams.file, {value: editor.getValue()}, function(){
+            editor.markClean();
+            valueChanged();
+            console.log("saved file", $routeParams.file);
+          });
+        };
       }
 
       function selectFile(file){
@@ -80,6 +91,11 @@ html(ng-app="goblint")
         editor.setOption("theme", theme);
       }
 
+      function valueChanged(){
+        $('#file-clean').toggle(editor.isClean());
+        $('#file-dirty').toggle(!editor.isClean());
+      }
+
   body
     include ie.fail.html
     .container-fluid(ng-controller="SourceCtrl")
@@ -91,35 +107,47 @@ html(ng-app="goblint")
         .span10
           .btn-toolbar
             .btn-group
-              a.btn(title="save", ui-jq="tooltip"): i.icon-hdd
+              a.btn(title="save", ui-jq="tooltip", ng-click="saveFile()"): i.icon-hdd
               a.btn(title="rename", ui-jq="tooltip"): i.icon-pencil
               a.btn(title="delete", ui-jq="tooltip"): i.icon-trash
-          span Select a theme:
-          select#theme(onchange="selectTheme()")
-              option default
-              option ambiance
-              option blackboard
-              option cobalt
-              option eclipse
-              option elegant
-              option erlang-dark
-              option lesser-dark
-              option midnight
-              option monokai
-              option neat
-              option night
-              option rubyblue
-              option solarized dark
-              option solarized light
-              option twilight
-              option vibrant-ink
-              option xq-dark
-              option xq-light
+            .btn-group.form-inline
+              label(for="theme") Theme:
+              select#theme(onchange="selectTheme()")
+                  option default
+                  option ambiance
+                  option blackboard
+                  option cobalt
+                  option eclipse
+                  option elegant
+                  option erlang-dark
+                  option lesser-dark
+                  option midnight
+                  option monokai
+                  option neat
+                  option night
+                  option rubyblue
+                  option solarized dark
+                  option solarized light
+                  option twilight
+                  option vibrant-ink
+                  option xq-dark
+                  option xq-light
           textarea#source(placeholder="Select a file on the left...")
           script
             var editor = CodeMirror.fromTextArea(document.getElementById('source'), {
               mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default'
             });
+            editor.on('change', function(){
+              console.log("content changed, clean:", editor.isClean());
+              valueChanged();
+            });
+          div
+            span#file-clean.label.label-success
+              i.icon-ok.icon-white
+              |  file clean
+            span#file-dirty.label.label-warning.hide
+              i.icon-warning-sign.icon-white
+              |  file dirty
           div
             span.label.label-success
               i.icon-ok.icon-white
@@ -131,7 +159,6 @@ html(ng-app="goblint")
           div(ng-view)
     if node_env=="development"
       // livereload snippet
-      //- TODO: only works sometimes
       script
         document.write('<script src="http://'
          + (location.host || 'localhost').split(':')[0]

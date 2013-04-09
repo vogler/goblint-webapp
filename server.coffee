@@ -39,6 +39,16 @@ app.get "/source/:file", (req, res) ->
   console.log "reading ", file
   (fs.createReadStream file).pipe res # streams file
 
+app.post "/source/:file", (req, res) ->
+  file = path.join(srcPath, req.params.file)
+  console.log "saving ", file
+  fs.writeFile file, req.body.value, (err) ->
+    if err
+      console.log "error writing to file:", err
+      res.send 500
+    else
+      res.send 200
+
 app.get "/result/:file", (req, res) ->
   file = path.join(srcPath, req.params.file)
   cmd = "../goblint --sets result pretty "+file
