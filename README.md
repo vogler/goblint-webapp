@@ -16,16 +16,14 @@ __Client:__
 [AngularUI](http://angular-ui.github.io/),
 [CodeMirror](http://codemirror.net/)
 
-#Installation
+# Installation
+In order to setup the web frontend (needs [node](http://nodejs.org/)'s npm; uses [bower](http://twitter.github.com/bower/)) do
+
+    sudo npm install -g bower coffee-script nodemon     # install those globally if not already installed (nodemon is optional)
     npm install && bower install
 
-#Start
-    coffee server
-
-Alternatively (reloads on changes, needs nodemon):
-
-    nodemon server.coffee
+Then run it using `coffee server.coffee` or `nodemon server.coffee` for automatic reloading during development.
 
 A JS version can be compiled using:
 
-    coffee -c server
+    coffee -c server.coffee

@@ -6,7 +6,6 @@ xml2js = require("xml2js")
 xmlParser = new xml2js.Parser()
 sys = require("sys")
 exec = require("child_process").exec
-util = require("util")
 app = express()
 
 # configure server
@@ -57,4 +56,5 @@ app.get "/result/:file", (req, res) ->
     res.send stdout
 
 
-app.listen app.get("port")
+app.listen app.get("port"), () ->
+  console.log "server listening on port", app.get("port")
