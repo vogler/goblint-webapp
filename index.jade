@@ -1,7 +1,7 @@
 doctype 5
 html(ng-app="goblint")
   head
-    title= pageTitle
+    title(ng-bind-template="{{title}}goblint")
     link(href="components/bootstrap/docs/assets/css/bootstrap.css", rel="stylesheet", media="screen")
     link(href="components/angular-ui/build/angular-ui.min.css", rel="stylesheet")
     link(href="components/codemirror/lib/codemirror.css", rel="stylesheet")
@@ -46,6 +46,14 @@ html(ng-app="goblint")
       console.log("angular-ui ok");
 
       function SourceCtrl($scope, $location, $routeParams){
+        $scope.files = [];
+        $scope.refresh = function(){
+          $.get('/files', {}, function(files){
+            $scope.files = files;
+            $scope.$apply();
+          });
+        };
+        $scope.refresh();
         $scope.newFile = function(text){
           if(!text) text = "";
           editor.setValue(text);
@@ -79,9 +87,11 @@ html(ng-app="goblint")
           if($routeParams.file){
             $scope.loadFile($routeParams.file);
             selectFile($routeParams.file);
+            $scope.$parent.title = $routeParams.file+" - ";
           }else{
             $scope.newFile();
             selectFile(false); // deselect
+            $scope.$parent.title = "";
           }
         });
         $scope.$on('$locationChangeStart', function(ev){
@@ -105,8 +115,7 @@ html(ng-app="goblint")
             console.log("saved file", file);
             if(isNew){
               $location.path("/file/"+file);
-              $scope.$apply();
-              location.reload(); // loads changed file list from server
+              $scope.refresh();
             }
           });
         };
@@ -119,8 +128,8 @@ html(ng-app="goblint")
           if(!name) return;
           $.post('/source/'+$routeParams.file, {name: name}, function(){
             console.log("renamed file", $routeParams.file, "to", name);
-            location.hash = "#/file/"+name;
-            location.reload(); // loads changed file list from server
+            $location.path("/file/"+name);
+            $scope.refresh();
           });
         };
         $scope.deleteFile = function(){
@@ -129,8 +138,7 @@ html(ng-app="goblint")
             type: 'DELETE',
             success: function(){
               $location.path("/");
-              $scope.$apply();
-              location.reload();
+              $scope.refresh();
             }
           });
         };
@@ -163,8 +171,8 @@ html(ng-app="goblint")
             i.icon.icon-plus
             |  empty file
           ul#files.nav
-            each f in files
-              li: a(href="#/file/"+f)= f
+            li(ng-repeat="file in files")
+              a(href="#/file/{{file}}") {{file}}
         .span10
           .btn-toolbar
             .btn-group

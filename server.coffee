@@ -27,11 +27,13 @@ srcPath = __dirname + "/../tests/regression/17-file/"
 
 # routes
 app.get "/", (req, res) ->
+  res.render "index.jade",
+    pageTitle: "Goblint"
+    node_env: process.env.NODE_ENV ? "development"
+
+app.get "/files", (req, res) ->
   fs.readdir srcPath, (err, files) ->
-    res.render "index.jade",
-      pageTitle: "Goblint"
-      files: files
-      node_env: process.env.NODE_ENV ? "development"
+    res.json files
 
 app.get "/source/:file", (req, res) ->
   file = path.join(srcPath, req.params.file)
