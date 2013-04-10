@@ -12,7 +12,8 @@
     "eyes": ">= 0.1.8",
     "xml2js": ">= 0.2.2",
     "connect-assets": ">= 2.3.3",
-    "coffee-script": ">= 1.4.0"
+    "coffee-script": ">= 1.4.0",
+    "socket.io": "~0.9.14"
   },
   "devDependencies": {}
 }

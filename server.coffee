@@ -1,14 +1,18 @@
 express = require("express")
 path = require("path")
 fs = require("fs")
-eyes = require("eyes")
-xml2js = require("xml2js")
-xmlParser = new xml2js.Parser()
+# eyes = require("eyes")
+# xml2js = require("xml2js")
+# xmlParser = new xml2js.Parser()
 sys = require("sys")
 exec = require("child_process").exec
 app = express()
+# socket.io
+server = require("http").createServer(app)
+io = require("socket.io").listen(server)
+io.set 'log level', 1
 
-# configure server
+# configure express
 app.configure ->
   # app.use(express.logger());
   app.set "port", process.env.PORT or 3000
@@ -42,7 +46,8 @@ app.get "/source/:file", (req, res) ->
     res.send 404
     return
   console.log "reading", file
-  (fs.createReadStream file).pipe res # streams file
+  # (fs.createReadStream file).pipe res # streams file
+  res.sendfile file
 
 app.post "/source/:file", (req, res) ->
   file = path.join(srcPath, req.params.file)
@@ -81,9 +86,18 @@ app.get "/result/:file", (req, res) ->
     # sys.print "stderr:", stderr
     res.send stdout
 
+
+# watch files and inform clients on changes
 watcher = fs.watch srcPath, (event, filename) ->
   console.log event: event, filename: filename
-  # watcher.close()
+  io.sockets.emit 'files'
 
-app.listen app.get("port"), () ->
+# watch = require("watch") # too slow
+# watch.createMonitor srcPath, (monitor) ->
+#   monitor.on "created", (f, stat) -> console.log "created", f
+#   monitor.on "changed", (f, curr, prev) -> console.log "changed", f
+#   monitor.on "removed", (f, stat) -> console.log "removed", f
+
+
+server.listen app.get("port"), () ->
   console.log "server listening on port", app.get("port")

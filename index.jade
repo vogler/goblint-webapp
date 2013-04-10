@@ -26,6 +26,7 @@ html(ng-app="goblint")
         background-repeat: repeat-x;
       }
     script(src="components/codemirror/addon/display/placeholder.js")
+    script(src="components/socket.io-client/dist/socket.io.min.js")
     script
       'use strict';
 
@@ -54,6 +55,13 @@ html(ng-app="goblint")
           });
         };
         $scope.refresh();
+
+        var socket = io.connect('http://localhost');
+        socket.on('files', function(files){
+          console.log('socket.io: files updated');
+          $scope.refresh();
+        });
+
         $scope.newFile = function(text){
           if(!text) text = "";
           editor.setValue(text);
