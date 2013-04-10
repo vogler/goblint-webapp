@@ -46,41 +46,99 @@ html(ng-app="goblint")
       console.log("angular-ui ok");
 
       function SourceCtrl($scope, $location, $routeParams){
-        //- $scope.sourceModel = "Select a file on the left...";
-        $scope.loadFile = function (f){
+        $scope.newFile = function(text){
+          if(!text) text = "";
+          editor.setValue(text);
+          editor.clearHistory();
+          editor.markClean();
+          valueChanged();
+        };
+        $scope.loadFile = function(f){
           $.get('/source/'+f, {}, function(data){
-            editor.setValue(data);
-            editor.clearHistory();
-            editor.markClean();
-            valueChanged();
+            $scope.newFile(data);
             console.log("loaded file", f);
-          });
-          $.get('/result/'+f, {}, function(data){
-            $('#result').text(data);
+            $.get('/result/'+f, {}, function(data){
+              $('#result').text(data);
+            });
+          })
+          .fail(function(){
+            console.log('/source/'+f, 'failed');
+            alert("The file "+$routeParams.file+" doesn't exist! Redirecting...");
+            if(history.length > 1){
+              history.back();
+            }else{
+              $location.path("/");
+              $scope.$apply();
+            }
           });
         };
         // gets called on every route change :(
         // alternative would be to add a route with a controller and a templateUrl pointing to a dummy file
-        $scope.$on('$routeChangeSuccess', function(){
-          console.log($routeParams);
+        $scope.$on('$routeChangeSuccess', function(ev){
+          //- console.log($location, $routeParams);
           if($routeParams.file){
             $scope.loadFile($routeParams.file);
             selectFile($routeParams.file);
+          }else{
+            $scope.newFile();
+            selectFile(false); // deselect
+          }
+        });
+        $scope.$on('$locationChangeStart', function(ev){
+          if(!editor.isClean()){
+            if(!confirm("You have unsaved changes! Discard them?"))
+              ev.preventDefault(); // stopPropagation
           }
         });
 
-        $scope.saveFile = function saveFile(){
-          $.post('/source/'+$routeParams.file, {value: editor.getValue()}, function(){
+        $scope.saveFile = function(){
+          var file = $routeParams.file;
+          var isNew = false;
+          if(!file){
+            file = prompt("New filename:");
+            if(!file) return;
+            isNew = true;
+          }
+          $.post('/source/'+file, {value: editor.getValue()}, function(){
             editor.markClean();
             valueChanged();
-            console.log("saved file", $routeParams.file);
+            console.log("saved file", file);
+            if(isNew){
+              $location.path("/file/"+file);
+              $scope.$apply();
+              location.reload(); // loads changed file list from server
+            }
+          });
+        };
+        $scope.renameFile = function(){
+          if(!editor.isClean()){
+            alert("File is dirty, safe first!");
+            return;
+          }
+          var name = prompt("New filename:");
+          if(!name) return;
+          $.post('/source/'+$routeParams.file, {name: name}, function(){
+            console.log("renamed file", $routeParams.file, "to", name);
+            location.hash = "#/file/"+name;
+            location.reload(); // loads changed file list from server
+          });
+        };
+        $scope.deleteFile = function(){
+          if(!confirm("Delete the file?")) return;
+          $.ajax({url: '/source/'+$routeParams.file,
+            type: 'DELETE',
+            success: function(){
+              $location.path("/");
+              $scope.$apply();
+              location.reload();
+            }
           });
         };
       }
 
       function selectFile(file){
         $('#files a').removeClass('label');
-        $("#files a:contains('"+file+"')").toggleClass('label');
+        if(file) $("#files a:contains('"+file+"')").toggleClass('label');
       }
 
       function selectTheme() {
@@ -101,15 +159,18 @@ html(ng-app="goblint")
     .container-fluid(ng-controller="SourceCtrl")
       .row-fluid
         .span2
-          ul#files.unstyled
+          a.btn.btn-small.btn-block(href="#/")
+            i.icon.icon-plus
+            |  empty file
+          ul#files.nav
             each f in files
               li: a(href="#/file/"+f)= f
         .span10
           .btn-toolbar
             .btn-group
               a.btn(title="save", ui-jq="tooltip", ng-click="saveFile()"): i.icon-hdd
-              a.btn(title="rename", ui-jq="tooltip"): i.icon-pencil
-              a.btn(title="delete", ui-jq="tooltip"): i.icon-trash
+              a.btn(title="rename", ui-jq="tooltip", ng-click="renameFile()"): i.icon-pencil
+              a.btn(title="delete", ui-jq="tooltip", ng-click="deleteFile()"): i.icon-trash
             .btn-group.form-inline
               label(for="theme") Theme:
               select#theme(onchange="selectTheme()")
@@ -132,13 +193,13 @@ html(ng-app="goblint")
                   option vibrant-ink
                   option xq-dark
                   option xq-light
-          textarea#source(placeholder="Select a file on the left...")
+          textarea#source(placeholder="Write new code here or select a file on the left...")
           script
             var editor = CodeMirror.fromTextArea(document.getElementById('source'), {
               mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default'
             });
             editor.on('change', function(){
-              console.log("content changed, clean:", editor.isClean());
+              //- console.log("content changed, clean:", editor.isClean());
               valueChanged();
             });
           div

@@ -35,15 +35,39 @@ app.get "/", (req, res) ->
 
 app.get "/source/:file", (req, res) ->
   file = path.join(srcPath, req.params.file)
-  console.log "reading ", file
+  if not fs.existsSync file
+    console.log "file not found: ", file
+    res.send 404
+    return
+  console.log "reading", file
   (fs.createReadStream file).pipe res # streams file
 
 app.post "/source/:file", (req, res) ->
   file = path.join(srcPath, req.params.file)
-  console.log "saving ", file
-  fs.writeFile file, req.body.value, (err) ->
+  if req.body.name
+    newfile = path.join(srcPath, req.body.name)
+    console.log "renaming", file, "to", newfile
+    fs.rename file, newfile, (err) ->
+      if err
+        console.log "error renaming file:", err
+        res.send 500
+      else
+        res.send 200
+  if req.body.value
+    console.log "saving", file
+    fs.writeFile file, req.body.value, (err) ->
+      if err
+        console.log "error writing to file:", err
+        res.send 500
+      else
+        res.send 200
+
+app.del "/source/:file", (req, res) ->
+  file = path.join(srcPath, req.params.file)
+  console.log "deleting", file
+  fs.unlink file, (err) ->
     if err
-      console.log "error writing to file:", err
+      console.log "error deleting file:", err
       res.send 500
     else
       res.send 200
@@ -52,9 +76,12 @@ app.get "/result/:file", (req, res) ->
   file = path.join(srcPath, req.params.file)
   cmd = "../goblint --sets result pretty "+file
   exec cmd, (error, stdout, stderr) ->
-    sys.print "stderr:", stderr
+    # sys.print "stderr:", stderr
     res.send stdout
 
+watcher = fs.watch srcPath, (event, filename) ->
+  console.log event: event, filename: filename
+  # watcher.close()
 
 app.listen app.get("port"), () ->
   console.log "server listening on port", app.get("port")
