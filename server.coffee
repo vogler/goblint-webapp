@@ -27,7 +27,7 @@ app.configure "development", -> # default, if NODE_ENV is not set
 
 
 # configure paths
-srcPath = __dirname + "/../tests/regression/17-file/"
+srcPath = __dirname + "/../tests/regression/18-file/"
 
 # routes
 app.get "/", (req, res) ->
