@@ -1,14 +1,14 @@
 doctype 5
 html(ng-app="goblint")
   head
-    title(ng-bind-template="{{title}}goblint")
-    link(href="components/bootstrap/docs/assets/css/bootstrap.css", rel="stylesheet", media="screen")
+    title(ng-bind-template="{{title}} - goblint")
+    link(href="components/bootstrap/dist/css/bootstrap.min.css", rel="stylesheet", media="screen")
     link(href="components/angular-ui/build/angular-ui.min.css", rel="stylesheet")
     link(href="components/codemirror/lib/codemirror.css", rel="stylesheet")
     //- link(href="components/codemirror/theme/monokai.css", rel="stylesheet")
     != css('index')
     script(src="components/jquery/jquery.min.js")
-    script(src="components/bootstrap/docs/assets/js/bootstrap.min.js")
+    script(src="components/bootstrap/dist/js/bootstrap.min.js")
     script(src="components/angular/angular.min.js")
     script(src="components/angular-resource/angular-resource.js")
     //- script(src="components/angular-cookies/angular-cookies.js")
@@ -95,7 +95,7 @@ html(ng-app="goblint")
           if($routeParams.file){
             $scope.loadFile($routeParams.file);
             selectFile($routeParams.file);
-            $scope.$parent.title = $routeParams.file+" - ";
+            $scope.$parent.title = $routeParams.file;
           }else{
             $scope.newFile();
             selectFile(false); // deselect
@@ -153,8 +153,8 @@ html(ng-app="goblint")
       }
 
       function selectFile(file){
-        $('#files a').removeClass('label');
-        if(file) $("#files a:contains('"+file+"')").toggleClass('label');
+        $('#files a').removeClass('active');
+        if(file) $("#files a:contains('"+file+"')").toggleClass('active');
       }
 
       function selectTheme() {
@@ -172,43 +172,49 @@ html(ng-app="goblint")
 
   body
     include ie.fail.html
-    .container-fluid(ng-controller="SourceCtrl")
-      .row-fluid
-        .span2
-          a.btn.btn-small.btn-block(href="#/")
-            i.icon.icon-plus
+    .container(ng-controller="SourceCtrl")
+      .row
+        .col-md-3
+          a.btn.btn-default.btn-sm.btn-block(href="#/")
+            i.glyphicon.glyphicon-plus
             |  empty file
-          ul#files.nav
-            li(ng-repeat="file in files")
-              a(href="#/file/{{file}}") {{file}}
-        .span10
+          div#files.list-group
+            a.list-group-item(ng-repeat="file in files", href="#/file/{{file}}") {{file}}
+        .col-md-9
           .btn-toolbar
             .btn-group
-              a.btn(title="save", ui-jq="tooltip", ng-click="saveFile()"): i.icon-hdd
-              a.btn(title="rename", ui-jq="tooltip", ng-click="renameFile()"): i.icon-pencil
-              a.btn(title="delete", ui-jq="tooltip", ng-click="deleteFile()"): i.icon-trash
-            .btn-group.form-inline
+              a.btn.btn-default(title="save", ui-jq="tooltip", ng-click="saveFile()"): i.glyphicon.glyphicon-floppy-disk
+              a.btn.btn-default(title="rename", ui-jq="tooltip", ng-click="renameFile()"): i.glyphicon.glyphicon-pencil
+              a.btn.btn-default(title="delete", ui-jq="tooltip", ng-click="deleteFile()"): i.glyphicon.glyphicon-trash
+            .btn-group
+              span#file-clean.label.label-success
+                i.glyphicon.glyphicon-check.icon-white
+                |  file clean
+              span#file-dirty.label.label-warning
+                i.glyphicon.glyphicon-edit.icon-white
+                |  file dirty
+            .btn-group.form-inline.pull-right
               label(for="theme") Theme:
               select#theme(onchange="selectTheme()")
-                  option default
-                  option ambiance
-                  option blackboard
-                  option cobalt
-                  option eclipse
-                  option elegant
-                  option erlang-dark
-                  option lesser-dark
-                  option midnight
-                  option monokai
-                  option neat
-                  option night
-                  option rubyblue
-                  option solarized dark
-                  option solarized light
-                  option twilight
-                  option vibrant-ink
-                  option xq-dark
-                  option xq-light
+                option default
+                option ambiance
+                option blackboard
+                option cobalt
+                option eclipse
+                option elegant
+                option erlang-dark
+                option lesser-dark
+                option midnight
+                option monokai
+                option neat
+                option night
+                option rubyblue
+                option solarized dark
+                option solarized light
+                option twilight
+                option vibrant-ink
+                option xq-dark
+                option xq-light
           textarea#source(placeholder="Write new code here or select a file on the left...")
           script
             var editor = CodeMirror.fromTextArea(document.getElementById('source'), {
@@ -219,18 +225,11 @@ html(ng-app="goblint")
               valueChanged();
             });
           div
-            span#file-clean.label.label-success
-              i.icon-ok.icon-white
-              |  file clean
-            span#file-dirty.label.label-warning.hide
-              i.icon-warning-sign.icon-white
-              |  file dirty
-          div
             span.label.label-success
-              i.icon-ok.icon-white
+              i.glyphicon.glyphicon-ok.icon-white
               |  no warnings
             span.label.label-warning
-              i.icon-warning-sign.icon-white
+              i.glyphicon.glyphicon-warning-sign.icon-white
               |  3 warnings
           textarea#result
           div(ng-view)
