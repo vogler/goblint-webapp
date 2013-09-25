@@ -20,6 +20,7 @@ html(ng-app="goblint")
     script(src="components/codemirror/addon/search/searchcursor.js")
     script(src="components/codemirror/addon/search/match-highlighter.js")
     style
+    style.
       .CodeMirror-focused .cm-matchhighlight {
         background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFklEQVQI12NgYGBgkKzc8x9CMDAwAAAmhwSbidEoSQAAAABJRU5ErkJggg==);
         background-position: bottom;
@@ -69,6 +70,7 @@ html(ng-app="goblint")
                 include editor-themes.jade
           textarea#source(placeholder="Write new code here or select a file on the left...")
           script
+          script.
             var editor = CodeMirror.fromTextArea(document.getElementById('source'), {
               mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default'
             });
@@ -90,6 +92,7 @@ html(ng-app="goblint")
     if node_env=="development"
       // livereload snippet
       script
+      script.
         document.write('<script src="http://'
          + (location.host || 'localhost').split(':')[0]
          + ':35729/livereload.js?snipver=1"><\/script>')
