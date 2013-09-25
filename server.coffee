@@ -32,7 +32,6 @@ srcPath = __dirname + "/../tests/regression/18-file/"
 # routes
 app.get "/", (req, res) ->
   res.render "index.jade",
-    pageTitle: "Goblint"
     node_env: process.env.NODE_ENV ? "development"
 
 app.get "/files", (req, res) ->
@@ -81,7 +80,7 @@ app.del "/source/:file", (req, res) ->
 
 app.get "/result/:file", (req, res) ->
   file = path.join(srcPath, req.params.file)
-  cmd = "../goblint --sets result pretty "+file
+  cmd = "../goblint --sets ana.activated[0][+] file --sets result pretty "+file
   exec cmd, (error, stdout, stderr) ->
     # sys.print "stderr:", stderr
     res.send stdout

@@ -27,163 +27,32 @@ html(ng-app="goblint")
       }
     script(src="components/codemirror/addon/display/placeholder.js")
     script(src="components/socket.io-client/dist/socket.io.min.js")
-    script
-      'use strict';
-
-      var app = angular.module('goblint', ['ngResource', 'ui']);
-      app.config(function ($routeProvider, $locationProvider) {
-          $routeProvider
-            .when('/', {})
-            .when('/file/:file', {}) // only used if a ng-view exists :(
-            .otherwise({
-              redirectTo: '/'
-            });
-            //- $locationProvider.html5Mode(true); // html5 pushState
-        })
-        .value('ui.config', {
-          jq: {tooltip: {placement: 'right'}}
-        });
-
-      console.log("angular-ui ok");
-
-      function SourceCtrl($scope, $location, $routeParams){
-        $scope.files = [];
-        $scope.refresh = function(){
-          $.get('/files', {}, function(files){
-            $scope.files = files;
-            $scope.$apply();
-          });
-        };
-        $scope.refresh();
-
-        var socket = io.connect('http://localhost');
-        socket.on('files', function(files){
-          console.log('socket.io: files updated');
-          $scope.refresh();
-        });
-
-        $scope.newFile = function(text){
-          if(!text) text = "";
-          editor.setValue(text);
-          editor.clearHistory();
-          editor.markClean();
-          valueChanged();
-        };
-        $scope.loadFile = function(f){
-          $.get('/source/'+f, {}, function(data){
-            $scope.newFile(data);
-            console.log("loaded file", f);
-            $.get('/result/'+f, {}, function(data){
-              $('#result').text(data);
-            });
-          })
-          .fail(function(){
-            console.log('/source/'+f, 'failed');
-            alert("The file "+$routeParams.file+" doesn't exist! Redirecting...");
-            if(history.length > 1){
-              history.back();
-            }else{
-              $location.path("/");
-              $scope.$apply();
-            }
-          });
-        };
-        // gets called on every route change :(
-        // alternative would be to add a route with a controller and a templateUrl pointing to a dummy file
-        $scope.$on('$routeChangeSuccess', function(ev){
-          //- console.log($location, $routeParams);
-          if($routeParams.file){
-            $scope.loadFile($routeParams.file);
-            selectFile($routeParams.file);
-            $scope.$parent.title = $routeParams.file;
-          }else{
-            $scope.newFile();
-            selectFile(false); // deselect
-            $scope.$parent.title = "";
-          }
-        });
-        $scope.$on('$locationChangeStart', function(ev){
-          if(!editor.isClean()){
-            if(!confirm("You have unsaved changes! Discard them?"))
-              ev.preventDefault(); // stopPropagation
-          }
-        });
-
-        $scope.saveFile = function(){
-          var file = $routeParams.file;
-          var isNew = false;
-          if(!file){
-            file = prompt("New filename:");
-            if(!file) return;
-            isNew = true;
-          }
-          $.post('/source/'+file, {value: editor.getValue()}, function(){
-            editor.markClean();
-            valueChanged();
-            console.log("saved file", file);
-            if(isNew){
-              $location.path("/file/"+file);
-              $scope.refresh();
-            }
-          });
-        };
-        $scope.renameFile = function(){
-          if(!editor.isClean()){
-            alert("File is dirty, safe first!");
-            return;
-          }
-          var name = prompt("New filename:");
-          if(!name) return;
-          $.post('/source/'+$routeParams.file, {name: name}, function(){
-            console.log("renamed file", $routeParams.file, "to", name);
-            $location.path("/file/"+name);
-            $scope.refresh();
-          });
-        };
-        $scope.deleteFile = function(){
-          if(!confirm("Delete the file?")) return;
-          $.ajax({url: '/source/'+$routeParams.file,
-            type: 'DELETE',
-            success: function(){
-              $location.path("/");
-              $scope.refresh();
-            }
-          });
-        };
-      }
-
-      function selectFile(file){
-        $('#files a').removeClass('active');
-        if(file) $("#files a:contains('"+file+"')").toggleClass('active');
-      }
-
-      function selectTheme() {
-        var theme = $("#theme").val();
-        var file = theme.split(' ')[0]+'.css';
-        if(theme!="default" && !$("head link[rel='stylesheet'][href*='"+file+"']").length) // no default.css && file not added yet
-          $(document.head).append($("<link/>").attr({rel: "stylesheet", href: "components/codemirror/theme/"+file}));
-        editor.setOption("theme", theme);
-      }
-
-      function valueChanged(){
-        $('#file-clean').toggle(editor.isClean());
-        $('#file-dirty').toggle(!editor.isClean());
-      }
+    != js('index')
 
   body
     include ie.fail.html
+    //- nav.navbar.navbar-default
+    //-   .collapse.navbar-collapse
+    //-     ul.nav.navbar-nav
+    //-       li.active
+    //-         a Link1
+    //-       li: a Link2
     .container(ng-controller="SourceCtrl")
       .row
-        .col-md-3
-          a.btn.btn-default.btn-sm.btn-block(href="#/")
-            i.glyphicon.glyphicon-plus
-            |  empty file
-          div#files.list-group
+        .col-md-12
+          ol.breadcrumb
+            li: a Home
+            li: a Bla
+            li.active Foo
+      .row
+        .col-md-2
+          #files.list-group
             a.list-group-item(ng-repeat="file in files", href="#/file/{{file}}") {{file}}
-        .col-md-9
+        .col-md-5
           .btn-toolbar
             .btn-group
-              a.btn.btn-default(title="save", ui-jq="tooltip", ng-click="saveFile()"): i.glyphicon.glyphicon-floppy-disk
+              a.btn.btn-default(title="new file", ui-jq="tooltip", href="#/"): i.glyphicon.glyphicon-file
+              a.btn.btn-default(title="save", ui-jq="tooltip", data-container="body", ng-click="saveFile()"): i.glyphicon.glyphicon-floppy-disk
               a.btn.btn-default(title="rename", ui-jq="tooltip", ng-click="renameFile()"): i.glyphicon.glyphicon-pencil
               a.btn.btn-default(title="delete", ui-jq="tooltip", ng-click="deleteFile()"): i.glyphicon.glyphicon-trash
             .btn-group
@@ -196,25 +65,7 @@ html(ng-app="goblint")
             .btn-group.form-inline.pull-right
               label(for="theme") Theme:
               select#theme(onchange="selectTheme()")
-                option default
-                option ambiance
-                option blackboard
-                option cobalt
-                option eclipse
-                option elegant
-                option erlang-dark
-                option lesser-dark
-                option midnight
-                option monokai
-                option neat
-                option night
-                option rubyblue
-                option solarized dark
-                option solarized light
-                option twilight
-                option vibrant-ink
-                option xq-dark
-                option xq-light
+                include editor-themes.jade
           textarea#source(placeholder="Write new code here or select a file on the left...")
           script
             var editor = CodeMirror.fromTextArea(document.getElementById('source'), {
@@ -232,7 +83,9 @@ html(ng-app="goblint")
               i.glyphicon.glyphicon-warning-sign.icon-white
               |  3 warnings
           textarea#result
-          div(ng-view)
+        .col-md-5
+          span foo
+    div(ng-view)
     if node_env=="development"
       // livereload snippet
       script
