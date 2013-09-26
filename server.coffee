@@ -27,19 +27,31 @@ app.configure "development", -> # default, if NODE_ENV is not set
 
 
 # configure paths
-srcPath = __dirname + "/../tests/regression/18-file/"
+srcPath = path.normalize(__dirname + "/..") # goblint path
 
 # routes
 app.get "/", (req, res) ->
   res.render "index.jade",
     node_env: process.env.NODE_ENV ? "development"
 
-app.get "/files", (req, res) ->
-  fs.readdir srcPath, (err, files) ->
-    res.json files
+splitPath = (x) ->
+  x = if x.substr(-1) == '/' then x.substr(0, x.length-1) else x
+  x.split(path.sep)
+Array::partition = (p) ->
+  @.reduce (([a,b], c) -> if p(c) then [a.concat(c),b] else [a,b.concat(c)]), [[],[]]
 
-app.get "/source/:file", (req, res) ->
-  file = path.join(srcPath, req.params.file)
+app.get "/files/:path?", (req, res) ->
+  p = if req.params.path then path.join(srcPath, decodeURIComponent(req.params.path)) else srcPath
+  fs.readdir p, (err, files) ->
+    if not files
+      res.send 404
+      return
+    [a,b] = files.partition (x) -> fs.statSync(path.join(p, x)).isDirectory()
+    files = (a.map (x) -> x+'/').concat b
+    res.json path: splitPath(path.relative(srcPath, p)), files: files
+
+app.get "/file/:file", (req, res) ->
+  file = path.join(srcPath, decodeURIComponent(req.params.file))
   if not fs.existsSync file
     console.log "file not found: ", file
     res.send 404
@@ -48,10 +60,10 @@ app.get "/source/:file", (req, res) ->
   # (fs.createReadStream file).pipe res # streams file
   res.sendfile file
 
-app.post "/source/:file", (req, res) ->
-  file = path.join(srcPath, req.params.file)
+app.post "/file/:file", (req, res) ->
+  file = path.join(srcPath, decodeURIComponent(req.params.file))
   if req.body.name
-    newfile = path.join(srcPath, req.body.name)
+    newfile = path.join(path.dirname(file), req.body.name)
     console.log "renaming", file, "to", newfile
     fs.rename file, newfile, (err) ->
       if err
@@ -68,8 +80,8 @@ app.post "/source/:file", (req, res) ->
       else
         res.send 200
 
-app.del "/source/:file", (req, res) ->
-  file = path.join(srcPath, req.params.file)
+app.del "/file/:file", (req, res) ->
+  file = path.join(srcPath, decodeURIComponent(req.params.file))
   console.log "deleting", file
   fs.unlink file, (err) ->
     if err
@@ -79,7 +91,7 @@ app.del "/source/:file", (req, res) ->
       res.send 200
 
 app.get "/result/:file", (req, res) ->
-  file = path.join(srcPath, req.params.file)
+  file = path.join(srcPath, decodeURIComponent(req.params.file))
   cmd = "../goblint --sets ana.activated[0][+] file --sets result pretty "+file
   exec cmd, (error, stdout, stderr) ->
     # sys.print "stderr:", stderr

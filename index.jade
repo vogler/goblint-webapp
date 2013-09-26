@@ -19,7 +19,6 @@ html(ng-app="goblint")
     script(src="components/codemirror/addon/edit/closebrackets.js")
     script(src="components/codemirror/addon/search/searchcursor.js")
     script(src="components/codemirror/addon/search/match-highlighter.js")
-    style
     style.
       .CodeMirror-focused .cm-matchhighlight {
         background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFklEQVQI12NgYGBgkKzc8x9CMDAwAAAmhwSbidEoSQAAAABJRU5ErkJggg==);
@@ -33,23 +32,16 @@ html(ng-app="goblint")
 
   body
     include ie.fail.html
-    //- nav.navbar.navbar-default
-    //-   .collapse.navbar-collapse
-    //-     ul.nav.navbar-nav
-    //-       li.active
-    //-         a Link1
-    //-       li: a Link2
     .container(ng-controller="SourceCtrl")
       .row
         .col-md-12
           ol.breadcrumb
-            li: a Home
-            li: a Bla
-            li.active Foo
+            li(ng-repeat="x in path"): a(ng-href="#/files/{{encodeURI2(path.slice(0, $index+1))}}") {{x}}
+            li.active {{selectedFile}}
       .row
         .col-md-2
           #files.list-group
-            a.list-group-item(ng-repeat="file in files", href="#/file/{{file}}") {{file}}
+            a.list-group-item(ng-repeat="file in files", ng-class="{active: file==selectedFile}", ng-href="#/{{file.last()!='/' && 'file' || 'files'}}/{{encodeURI2(path, file)}}") {{file}}
         .col-md-5
           .btn-toolbar
             .btn-group
@@ -69,7 +61,6 @@ html(ng-app="goblint")
               select#theme(onchange="selectTheme()")
                 include editor-themes.jade
           textarea#source(placeholder="Write new code here or select a file on the left...")
-          script
           script.
             var editor = CodeMirror.fromTextArea(document.getElementById('source'), {
               mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default'
@@ -87,11 +78,18 @@ html(ng-app="goblint")
               |  3 warnings
           textarea#result
         .col-md-5
-          span foo
+          textarea#spec(placeholder="Write new spec here or select a file on the left...")
+          script.
+            var spec = CodeMirror.fromTextArea(document.getElementById('spec'), {
+              mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default'
+            });
+            spec.on('change', function(){
+              //- console.log("content changed, clean:", spec.isClean());
+              valueChanged();
+            });
     div(ng-view)
     if node_env=="development"
       // livereload snippet
-      script
       script.
         document.write('<script src="http://'
          + (location.host || 'localhost').split(':')[0]
