@@ -6,18 +6,18 @@ __Server:__
 [express](http://expressjs.com/),
 [jade](http://jade-lang.com/),
 [stylus](http://learnboost.github.com/stylus/),
-[connect-assets](https://github.com/TrevorBurnham/connect-assets),
+[connect-assets](https://github.com/adunkman/connect-assets),
 [CoffeeScript](http://coffeescript.org/)
 
 __Client:__
 [jQuery](http://jquery.com/),
-[Twitter Bootstrap](http://twitter.github.com/bootstrap/),
+[Twitter Bootstrap](http://getbootstrap.com/),
 [AngularJS](http://angularjs.org/),
 [AngularUI](http://angular-ui.github.io/),
 [CodeMirror](http://codemirror.net/)
 
 # Installation
-In order to setup the web frontend (needs [node](http://nodejs.org/)'s npm; uses [bower](http://twitter.github.com/bower/)) do
+In order to setup the web frontend (needs [node](http://nodejs.org/)'s npm; uses [bower](http://bower.io/)) do
 
     sudo npm install -g bower coffee-script nodemon     # install those globally if not already installed (nodemon is optional)
     npm install && bower install
