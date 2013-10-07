@@ -6,6 +6,7 @@ fs = require("fs")
 # xmlParser = new xml2js.Parser()
 sys = require("sys")
 exec = require("child_process").exec
+spawn = require("child_process").spawn
 app = express()
 # socket.io
 server = require("http").createServer(app)
@@ -96,6 +97,16 @@ app.get "/result/:file", (req, res) ->
   exec cmd, (error, stdout, stderr) ->
     # sys.print "stderr:", stderr
     res.send stdout
+
+app.post "/dot", (req, res) ->
+  console.log "generating dot from spec"
+  spec = spawn "../_build/src/mainspec.native", ["-"]
+  spec.stdout.pipe res
+  spec.stdin.write req.body.value
+  spec.stdin.end()
+  # spec.stdout.on "data", (data) ->
+  #   console.log data
+  #   res.write data
 
 
 # watch files and inform clients on changes

@@ -28,6 +28,8 @@ html(ng-app="goblint")
     script(src="components/codemirror/addon/display/placeholder.js")
     script(src="components/socket.io-client/dist/socket.io.min.js")
     script(src="components/sugar/release/sugar.min.js")
+    script(src="viz.js")
+    //- script#graphdata(type="text/vnd.graphviz").
     != js('index')
 
   body
@@ -67,16 +69,18 @@ html(ng-app="goblint")
             });
             editor.on('change', function(){
               //- console.log("content changed, clean:", editor.isClean());
-              valueChanged();
+              sourceChanged();
             });
-          div
+          #result
             span.label.label-success
               i.glyphicon.glyphicon-ok.icon-white
               |  no warnings
             span.label.label-warning
               i.glyphicon.glyphicon-warning-sign.icon-white
               |  3 warnings
-          textarea#result
+            br
+            textarea#output
+            #graph
         .col-md-5
           textarea#spec(placeholder="Write new spec here or select a file on the left...")
           script.
@@ -85,7 +89,7 @@ html(ng-app="goblint")
             });
             spec.on('change', function(){
               //- console.log("content changed, clean:", spec.isClean());
-              valueChanged();
+              specChanged();
             });
     div(ng-view)
     if node_env=="development"

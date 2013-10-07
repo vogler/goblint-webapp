@@ -58,16 +58,21 @@ function SourceCtrl($scope, $location, $routeParams){
     $scope.loadFiles();
   });
 
-  $.get('/file/'+encodeURIComponent('src/spec/file.spec'), {}, function(data){
-    spec.setValue(data);
-  });
+  $scope.loadSpec = function(specFile){
+    $.get('/file/'+encodeURIComponent(specFile), {}, function(data){
+      spec.setValue(data);
+      // updateGraph();
+    });
+  };
+  $scope.loadSpec('src/spec/file.spec');
 
   $scope.newFile = function(text){
     if(!text) text = "";
     editor.setValue(text);
     editor.clearHistory();
     editor.markClean();
-    valueChanged();
+    sourceChanged();
+    $('#result').hide();
   };
   $scope.loadFile = function(f){
     var ff = decodeURIComponent(f);
@@ -77,7 +82,8 @@ function SourceCtrl($scope, $location, $routeParams){
       console.log("loaded file", ff);
       // $scope.selectedFile = ff.split('/').last(); // doesn't update bindings
       $.get('/result/'+f, {}, function(data){
-        $('#result').text(data);
+        $('#result').show();
+        $('#output').text(data);
       });
     })
     .fail(function(){
@@ -131,7 +137,7 @@ function SourceCtrl($scope, $location, $routeParams){
     var url = '/file/'+file;
     $.post(url, {value: editor.getValue()}, function(){
       editor.markClean();
-      valueChanged();
+      sourceChanged();
       console.log("saved file", file);
       if(isNew){
         $location.path(url);
@@ -172,7 +178,16 @@ function selectTheme() {
   editor.setOption("theme", theme);
 }
 
-function valueChanged(){
+function sourceChanged(){
   $('#file-clean').toggle(editor.isClean());
   $('#file-dirty').toggle(!editor.isClean());
+}
+function updateGraph(){
+  console.log("update graph!");
+  $.post('/dot', {value: spec.getValue()}, function(data){
+    $('#graph').html(Viz(data, "svg"));
+  });
+}
+function specChanged(){
+  updateGraph();
 }
