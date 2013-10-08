@@ -7,6 +7,7 @@ fs = require("fs")
 sys = require("sys")
 exec = require("child_process").exec
 spawn = require("child_process").spawn
+pause_stream = require('pause-stream')
 app = express()
 # socket.io
 server = require("http").createServer(app)
@@ -101,30 +102,24 @@ app.get "/result/:file", (req, res) ->
 app.post "/spec/:type", (req, res) ->
   console.log "converting spec to type", req.params.type
   spec = spawn "../_build/src/mainspec.native", ["-"]
-  dot
-  buf = []
-  buffer = (stream) ->
-    stream.on "data", (x) -> buf.push(x)
+  ps = pause_stream().pause() # buffer output, otherwise can't change status since headers already sent
   if req.params.type == "dot"
-    buffer spec.stdout
-    buffer spec.stderr
+    spec.stdout.pipe ps
+    spec.stderr.pipe ps
   else if req.params.type == "png"
     dot = spawn "dot", ["-Tpng", ]
     spec.stdout.pipe dot.stdin
-    buffer dot.stdout
+    dot.stdout.pipe ps
   else
     console.log "unknown type"
-    res.send 500
+    res.send 500, "unknown type"
     return
   spec.on "close", (code) ->
     if code isnt 0
       console.log "parsing spec failed"
-      res.send 500, Buffer.concat(buf)
-    else
-      if req.params.type == "png" # wait until dot is done
-        dot.on "close", (code) -> res.send Buffer.concat(buf)
-      else
-        res.send Buffer.concat(buf)
+      res.status 500
+    ps.pipe res
+    ps.resume()
   spec.stdin.write req.body.value
   spec.stdin.end()
 
