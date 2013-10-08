@@ -8,6 +8,7 @@ html(ng-app="goblint")
     //- link(href="components/codemirror/theme/monokai.css", rel="stylesheet")
     != css('index')
     script(src="components/jquery/jquery.min.js")
+    script(src="components/underscore/underscore-min.js")
     script(src="components/bootstrap/dist/js/bootstrap.min.js")
     script(src="components/angular/angular.min.js")
     script(src="components/angular-resource/angular-resource.js")
@@ -67,7 +68,7 @@ html(ng-app="goblint")
             var editor = CodeMirror.fromTextArea(document.getElementById('source'), {
               mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default'
             });
-            editor.on('change', sourceChanged);
+            editor.on('change', _.throttle(sourceChanged, 200));
           #result
             span.label.label-success
               i.glyphicon.glyphicon-ok.icon-white
@@ -83,10 +84,10 @@ html(ng-app="goblint")
             var spec = CodeMirror.fromTextArea(document.getElementById('spec'), {
               mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default'
             });
-            spec.on('change', specChanged);
+            spec.on('change', _.debounce(specChanged, 200));
           span#spec-error.label.label-warning
             i.glyphicon.glyphicon-edit.icon-white
-            |  parse error on line {{line}}
+            |  parse error on line {{spec_error_line}}
           #spec-controls.btn-toolbar
             .btn-group
               form(action="/spec/png", method="POST", target="_blank")

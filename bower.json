@@ -12,6 +12,7 @@
     "codemirror": "git://github.com/marijnh/CodeMirror.git",
     "socket.io-client": "~0.9.11",
     "bootstrap": "~3.0.0",
-    "sugar": "~1.4.1"
+    "sugar": "~1.4.1",
+    "underscore": "~1.5.2"
   }
 }

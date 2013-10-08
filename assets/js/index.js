@@ -66,6 +66,27 @@ function SourceCtrl($scope, $location, $routeParams){
   };
   $scope.loadSpec('src/spec/file.spec');
 
+  $scope.updateGraph = function(){
+    console.log("update graph!");
+    var parseError = function(failed){
+      $('#spec-error').toggle(failed);
+      $('#spec-controls').toggle(!failed);
+    };
+    $.post('/spec/dot', {value: spec.getValue()}, function(data){
+      $('#graph').html(Viz(data, "svg"));
+      parseError(false);
+    })
+    .fail(function(res){
+      console.log(res.responseText);
+      var lineno = /Line (.*?):/.exec(res.responseText);
+      if(lineno){
+        $scope.spec_error_line = lineno[1];
+        $scope.$apply();
+      }
+      parseError(true);
+    });
+  }
+
   $scope.newFile = function(text){
     if(!text) text = "";
     editor.setValue(text);
@@ -182,26 +203,6 @@ function sourceChanged(){
   $('#file-clean').toggle(editor.isClean());
   $('#file-dirty').toggle(!editor.isClean());
 }
-function updateGraph(){
-  console.log("update graph!");
-  var parseError = function(failed){
-    $('#spec-error').toggle(failed);
-    $('#spec-controls').toggle(!failed);
-  };
-  $.post('/spec/dot', {value: spec.getValue()}, function(data){
-    $('#graph').html(Viz(data, "svg"));
-    parseError(false);
-  })
-  .fail(function(res){
-    console.log(res.responseText);
-    var lineno = /Line (.*?):/.exec(res.responseText);
-    if(lineno){
-      $("#spec-error").text("parse error on line "+lineno[1]);
-    }
-    parseError(true);
-  });
-}
 function specChanged(){
-  // TODO only reload every x ms and not for every keystroke
-  updateGraph();
+  $("#spec").scope().updateGraph(); // beter way to get to scope?
 }
