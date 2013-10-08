@@ -95,18 +95,26 @@ app.get "/result/:file", (req, res) ->
   file = path.join(srcPath, decodeURIComponent(req.params.file))
   cmd = "../goblint --sets ana.activated[0][+] file --sets result pretty "+file
   exec cmd, (error, stdout, stderr) ->
-    # sys.print "stderr:", stderr
+    sys.print "stderr:", stderr
     res.send stdout
 
-app.post "/dot", (req, res) ->
-  console.log "generating dot from spec"
+app.post "/spec/:type", (req, res) ->
+  console.log "converting spec to type", req.params.type
   spec = spawn "../_build/src/mainspec.native", ["-"]
-  spec.stdout.pipe res
+  if req.params.type == "dot"
+    spec.stdout.pipe res
+  else if req.params.type == "png"
+    dot = spawn "dot", ["-Tpng", ]
+    spec.stdout.pipe dot.stdin
+    dot.stdout.pipe res
+  else
+    console.log "unknown type"
+    res.send 500
+    return
+  spec.on "close", (code) ->
+    console.log "parsing spec failed" if code isnt 0
   spec.stdin.write req.body.value
   spec.stdin.end()
-  # spec.stdout.on "data", (data) ->
-  #   console.log data
-  #   res.write data
 
 
 # watch files and inform clients on changes

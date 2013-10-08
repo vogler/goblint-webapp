@@ -67,10 +67,7 @@ html(ng-app="goblint")
             var editor = CodeMirror.fromTextArea(document.getElementById('source'), {
               mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default'
             });
-            editor.on('change', function(){
-              //- console.log("content changed, clean:", editor.isClean());
-              sourceChanged();
-            });
+            editor.on('change', sourceChanged);
           #result
             span.label.label-success
               i.glyphicon.glyphicon-ok.icon-white
@@ -80,17 +77,22 @@ html(ng-app="goblint")
               |  3 warnings
             br
             textarea#output
-            #graph
         .col-md-5
           textarea#spec(placeholder="Write new spec here or select a file on the left...")
           script.
             var spec = CodeMirror.fromTextArea(document.getElementById('spec'), {
               mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default'
             });
-            spec.on('change', function(){
-              //- console.log("content changed, clean:", spec.isClean());
-              specChanged();
-            });
+            spec.on('change', specChanged);
+          span#spec-error.label.label-warning
+            i.glyphicon.glyphicon-edit.icon-white
+            |  parse error
+          #spec-controls.btn-toolbar
+            .btn-group
+              form(action="/spec/png", method="POST", target="_blank")
+                input(type="hidden", name="value")
+                a.btn.btn-default(title="open graph as PNG", ui-jq="tooltip", onclick="$(this).prev().val(spec.getValue()); $(this).parent().submit();"): i.glyphicon.glyphicon-picture
+          #graph
     div(ng-view)
     if node_env=="development"
       // livereload snippet

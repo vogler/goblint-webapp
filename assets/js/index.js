@@ -184,8 +184,15 @@ function sourceChanged(){
 }
 function updateGraph(){
   console.log("update graph!");
-  $.post('/dot', {value: spec.getValue()}, function(data){
-    $('#graph').html(Viz(data, "svg"));
+  $.post('/spec/dot', {value: spec.getValue()}, function(data){
+    if(data.length == 0){
+      $('#spec-error').show();
+      $('#spec-controls').hide();
+    }else{
+      $('#spec-error').hide();
+      $('#spec-controls').show();
+      $('#graph').html(Viz(data, "svg"));
+    }
   });
 }
 function specChanged(){
