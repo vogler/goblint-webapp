@@ -101,18 +101,30 @@ app.get "/result/:file", (req, res) ->
 app.post "/spec/:type", (req, res) ->
   console.log "converting spec to type", req.params.type
   spec = spawn "../_build/src/mainspec.native", ["-"]
+  dot
+  buf = []
+  buffer = (stream) ->
+    stream.on "data", (x) -> buf.push(x)
   if req.params.type == "dot"
-    spec.stdout.pipe res
+    buffer spec.stdout
+    buffer spec.stderr
   else if req.params.type == "png"
     dot = spawn "dot", ["-Tpng", ]
     spec.stdout.pipe dot.stdin
-    dot.stdout.pipe res
+    buffer dot.stdout
   else
     console.log "unknown type"
     res.send 500
     return
   spec.on "close", (code) ->
-    console.log "parsing spec failed" if code isnt 0
+    if code isnt 0
+      console.log "parsing spec failed"
+      res.send 500, Buffer.concat(buf)
+    else
+      if req.params.type == "png" # wait until dot is done
+        dot.on "close", (code) -> res.send Buffer.concat(buf)
+      else
+        res.send Buffer.concat(buf)
   spec.stdin.write req.body.value
   spec.stdin.end()
 

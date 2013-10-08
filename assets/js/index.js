@@ -184,17 +184,24 @@ function sourceChanged(){
 }
 function updateGraph(){
   console.log("update graph!");
+  var parseError = function(failed){
+    $('#spec-error').toggle(failed);
+    $('#spec-controls').toggle(!failed);
+  };
   $.post('/spec/dot', {value: spec.getValue()}, function(data){
-    if(data.length == 0){
-      $('#spec-error').show();
-      $('#spec-controls').hide();
-    }else{
-      $('#spec-error').hide();
-      $('#spec-controls').show();
-      $('#graph').html(Viz(data, "svg"));
+    $('#graph').html(Viz(data, "svg"));
+    parseError(false);
+  })
+  .fail(function(res){
+    console.log(res.responseText);
+    var lineno = /Line (.*?):/.exec(res.responseText);
+    if(lineno){
+      $("#spec-error").text("parse error on line "+lineno[1]);
     }
+    parseError(true);
   });
 }
 function specChanged(){
+  // TODO only reload every x ms and not for every keystroke
   updateGraph();
 }

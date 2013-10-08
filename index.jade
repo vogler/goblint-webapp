@@ -86,7 +86,7 @@ html(ng-app="goblint")
             spec.on('change', specChanged);
           span#spec-error.label.label-warning
             i.glyphicon.glyphicon-edit.icon-white
-            |  parse error
+            |  parse error on line {{line}}
           #spec-controls.btn-toolbar
             .btn-group
               form(action="/spec/png", method="POST", target="_blank")
