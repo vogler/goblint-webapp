@@ -61,7 +61,7 @@ function SourceCtrl($scope, $location, $routeParams){
   $scope.loadSpec = function(specFile){
     $.get('/file/'+encodeURIComponent(specFile), {}, function(data){
       spec.setValue(data);
-      // updateGraph();
+      $('#spec-error').hide();
     });
   };
   $scope.loadSpec('src/spec/file.spec');
@@ -104,6 +104,7 @@ function SourceCtrl($scope, $location, $routeParams){
       // $scope.selectedFile = ff.split('/').last(); // doesn't update bindings
       $.get('/result/'+f, {}, function(data){
         $('#result').show();
+        $("#compile-error").hide();
         $('#output').text(data);
       });
     })
@@ -198,6 +199,21 @@ function SourceCtrl($scope, $location, $routeParams){
       console.log("reverted", file, ": ", data);
       $scope.reloadFile();
       $scope.loadFiles();
+    });
+  };
+  $scope.runFile = function(){
+    var file = $routeParams.file;
+    if(!editor.isClean()){
+      $scope.saveFile();
+    }
+    $.get('/run/'+file, {}, function(data){
+      console.log("compile and run", file);
+      $('#output').text(data);
+      $("#compile-error").hide();
+    })
+    .fail(function(res){
+      $('#output').text(res.responseText);
+      $("#compile-error").show();
     });
   };
 }

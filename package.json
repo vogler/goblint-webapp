@@ -14,7 +14,8 @@
     "connect-assets": "~2.5.2",
     "coffee-script": "~1.6.3",
     "socket.io": "~0.9.16",
-    "pause-stream": "0.0.11"
+    "pause-stream": "0.0.11",
+    "tmp": "0.0.21"
   },
   "devDependencies": {}
 }

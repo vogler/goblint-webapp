@@ -7,6 +7,8 @@ fs = require("fs")
 sys = require("sys")
 exec = require("child_process").exec
 spawn = require("child_process").spawn
+tmp = require("tmp")
+tmp.setGracefulCleanup() # cleanup the temporary files even when an uncaught exception occurs
 pause_stream = require('pause-stream')
 app = express()
 # socket.io
@@ -123,6 +125,21 @@ app.get "/result/:file", (req, res) ->
   exec cmd, (error, stdout, stderr) ->
     sys.print "stderr:", stderr
     res.send stdout
+
+fs.mkdirSync "tmp" unless fs.existsSync "tmp/"
+app.get "/run/:file", (req, res) ->
+  file = path.join(srcPath, decodeURIComponent(req.params.file))
+  baseFile = path.basename file
+  tmp.tmpName {template: "./tmp/"+baseFile+"-XXXXXX"}, (err, tmpPath) ->
+    throw err if err
+    console.log "temporary path:", tmpPath
+    cmd = "clang "+file+" -o "+tmpPath
+    exec cmd, (error, stdout, stderr) ->
+      if error
+        res.send 500, stderr
+        return
+      exec "./"+path.basename(tmpPath), cwd: path.dirname(tmpPath), (error, stdout, stderr) ->
+        res.send stdout
 
 app.post "/spec/:type", (req, res) ->
   console.log "converting spec to type", req.params.type

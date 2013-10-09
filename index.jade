@@ -54,7 +54,9 @@ html(ng-app="goblint")
               a.btn.btn-default(title="save", ui-jq="tooltip", data-container="body", ng-click="saveFile()"): i.glyphicon.glyphicon-floppy-disk
               a.btn.btn-default(title="rename", ui-jq="tooltip", ng-click="renameFile()"): i.glyphicon.glyphicon-pencil
               a.btn.btn-default(title="delete", ui-jq="tooltip", ng-click="deleteFile()"): i.glyphicon.glyphicon-trash
-              a.btn.btn-default(title="revert to version from git", ui-jq="tooltip", ng-click="revertFile()"): i.glyphicon.glyphicon-share-alt
+            .btn-group
+              a.btn.btn-default(title="revert to version from git", ui-jq="tooltip", ng-click="revertFile()"): i.glyphicon.glyphicon-share-alt.icon-flipped
+              a.btn.btn-default(title="compile and run", ui-jq="tooltip", ng-click="runFile()"): i.glyphicon.glyphicon-play
             .btn-group
               span#file-clean.label.label-success
                 i.glyphicon.glyphicon-check.icon-white
@@ -76,9 +78,9 @@ html(ng-app="goblint")
             span.label.label-success
               i.glyphicon.glyphicon-ok.icon-white
               |  no warnings
-            span.label.label-warning
+            span#compile-error.label.label-warning
               i.glyphicon.glyphicon-warning-sign.icon-white
-              |  3 warnings
+              |  compile error
             br
             textarea#output
         .col-md-5
