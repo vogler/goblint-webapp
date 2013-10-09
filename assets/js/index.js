@@ -165,8 +165,8 @@ function SourceCtrl($scope, $location, $routeParams){
       console.log("saved file", file);
       if(isNew){
         $location.path(url);
-        $scope.loadFiles();
       }
+      $scope.loadFiles();
     });
   };
   $scope.renameFile = function(){
@@ -195,8 +195,9 @@ function SourceCtrl($scope, $location, $routeParams){
   $scope.revertFile = function(){
     var file = $routeParams.file;
     $.post('/revert/'+file, {}, function(data){
-      console.log("reverted", file, ": ", data)
+      console.log("reverted", file, ": ", data);
       $scope.reloadFile();
+      $scope.loadFiles();
     });
   };
 }

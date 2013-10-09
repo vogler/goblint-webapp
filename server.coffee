@@ -29,28 +29,45 @@ app.configure "development", -> # default, if NODE_ENV is not set
 
 
 # configure paths
-srcPath = path.normalize(__dirname + "/..") # goblint path
+srcPath = path.normalize(__dirname + "/..") # goblint path (should be root of git repo)
 
 # routes
 app.get "/", (req, res) ->
   res.render "index.jade",
     node_env: process.env.NODE_ENV ? "development"
 
+Array::partition = (p) ->
+  @.reduce (([a,b], c) -> if p(c) then [a.concat(c),b] else [a,b.concat(c)]), [[],[]]
 splitPath = (x) ->
   x = if x.substr(-1) == '/' then x.substr(0, x.length-1) else x
   x.split(path.sep)
-Array::partition = (p) ->
-  @.reduce (([a,b], c) -> if p(c) then [a.concat(c),b] else [a,b.concat(c)]), [[],[]]
+gitModified = (absPath, relPath, clb) ->
+  exec "git status --porcelain", {cwd: absPath}, (error, stdout, stderr) ->
+    # console.log stdout
+    xs = stdout.split("\n").map (x) -> x.substr(3, x.length) # drop status column
+    xs.forEach (x) -> # take care of renamed files
+      a = x.split " -> "
+      if a.length is 2
+        xs.push a[0], a[1]
+        xs.splice(xs.indexOf(x), 1)
+    xs = xs.filter (x) -> x.indexOf(relPath) == 0 # ignore files that are not in path
+    xs = xs.map (x) -> x.substr(relPath.length+1, x.length) # remove path prefix
+    clb(xs)
 
 app.get "/files/:path?", (req, res) ->
-  p = if req.params.path then path.join(srcPath, decodeURIComponent(req.params.path)) else srcPath
-  fs.readdir p, (err, files) ->
+  absPath = if req.params.path then path.join(srcPath, decodeURIComponent(req.params.path)) else srcPath
+  relPath = path.relative(srcPath, absPath)
+  console.log "reading path", absPath, relPath
+  fs.readdir absPath, (err, files) ->
     if not files
       res.send 404
       return
-    [a,b] = files.partition (x) -> fs.statSync(path.join(p, x)).isDirectory()
+    [a,b] = files.partition (x) -> fs.statSync(path.join(absPath, x)).isDirectory()
     files = (a.map (x) -> x+'/').concat b
-    res.json path: splitPath(path.relative(srcPath, p)), files: files
+    gitModified absPath, relPath, (modifiedFiles) ->
+      console.log "modified files in this path:", modifiedFiles
+      files = files.map (x) -> {name: x, modified: modifiedFiles.indexOf(x) != -1}
+      res.json path: splitPath(relPath), files: files
 
 app.get "/file/:file", (req, res) ->
   file = path.join(srcPath, decodeURIComponent(req.params.file))
@@ -95,7 +112,7 @@ app.del "/file/:file", (req, res) ->
 app.post "/revert/:file", (req, res) ->
   file = path.join(srcPath, decodeURIComponent(req.params.file))
   console.log "reverting", file
-  cmd = "git checkout -- "+file
+  cmd = "git reset HEAD "+file+"; git checkout -- "+file
   exec cmd, {cwd: srcPath}, (error, stdout, stderr) ->
     sys.print "stderr:", stderr
     res.send stdout
@@ -133,7 +150,7 @@ app.post "/spec/:type", (req, res) ->
 
 
 # watch files and inform clients on changes
-# TODO not recursive! -> use module that watches trees or handle each user with socket.io
+# TODO not recursive! -> use module that watches trees (e.g. mikeal/watch, paulmillr/chokidar, bevry/watchr) or handle each user with socket.io
 watcher = fs.watch srcPath, (event, filename) ->
   console.log event: event, filename: filename
   io.sockets.emit 'files'

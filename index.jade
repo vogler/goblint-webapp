@@ -44,7 +44,9 @@ html(ng-app="goblint")
       .row
         .col-md-2
           #files.list-group
-            a.list-group-item(ng-repeat="file in files", ng-class="{active: file==selectedFile}", ng-href="#/{{file.last()!='/' && 'file' || 'files'}}/{{encodeURI2(path, file)}}") {{file}}
+            a.list-group-item(ng-repeat="file in files", ng-class="{active: file.name==selectedFile}", ng-href="#/{{file.name.last()!='/' && 'file' || 'files'}}/{{encodeURI2(path, file.name)}}")
+              {{file.name}}
+              .badge(ng-show="file.modified") M
         .col-md-5
           .btn-toolbar
             .btn-group
@@ -87,7 +89,7 @@ html(ng-app="goblint")
             });
             spec.on('change', _.debounce(specChanged, 200));
           span#spec-error.label.label-warning
-            i.glyphicon.glyphicon-edit.icon-white
+            i.glyphicon.glyphicon-warning-sign.icon-white
             |  parse error on line {{spec_error_line}}
           #spec-controls.btn-toolbar
             .btn-group
