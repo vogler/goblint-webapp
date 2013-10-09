@@ -118,6 +118,9 @@ function SourceCtrl($scope, $location, $routeParams){
       }
     });
   };
+  $scope.reloadFile = function(){
+    $scope.loadFile($routeParams.file);
+  };
   // gets called on every route change :(
   // alternative would be to add a route with a controller and a templateUrl pointing to a dummy file
   $scope.$on('$routeChangeSuccess', function(ev){
@@ -187,6 +190,13 @@ function SourceCtrl($scope, $location, $routeParams){
         $location.path("/");
         $scope.loadFiles();
       }
+    });
+  };
+  $scope.revertFile = function(){
+    var file = $routeParams.file;
+    $.post('/revert/'+file, {}, function(data){
+      console.log("reverted", file, ": ", data)
+      $scope.reloadFile();
     });
   };
 }

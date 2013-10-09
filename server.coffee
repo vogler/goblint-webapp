@@ -92,6 +92,14 @@ app.del "/file/:file", (req, res) ->
     else
       res.send 200
 
+app.post "/revert/:file", (req, res) ->
+  file = path.join(srcPath, decodeURIComponent(req.params.file))
+  console.log "reverting", file
+  cmd = "git checkout -- "+file
+  exec cmd, {cwd: srcPath}, (error, stdout, stderr) ->
+    sys.print "stderr:", stderr
+    res.send stdout
+
 app.get "/result/:file", (req, res) ->
   file = path.join(srcPath, decodeURIComponent(req.params.file))
   cmd = "../goblint --sets ana.activated[0][+] file --sets result pretty "+file
@@ -125,6 +133,7 @@ app.post "/spec/:type", (req, res) ->
 
 
 # watch files and inform clients on changes
+# TODO not recursive! -> use module that watches trees or handle each user with socket.io
 watcher = fs.watch srcPath, (event, filename) ->
   console.log event: event, filename: filename
   io.sockets.emit 'files'
