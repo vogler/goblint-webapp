@@ -27,7 +27,6 @@ html(ng-app="goblint")
       }
     script(src="components/codemirror/addon/display/placeholder.js")
     script(src="components/socket.io-client/dist/socket.io.min.js")
-    script(src="components/sugar/release/sugar.min.js")
     script(src="viz.js")
     != js('index')
 
@@ -37,12 +36,12 @@ html(ng-app="goblint")
       .row
         .col-md-12
           ol.breadcrumb
-            li(ng-repeat="x in path"): a(ng-href="#/files/{{encodeURI2(path.slice(0, $index+1))}}") {{x}}
+            li(ng-repeat="x in path"): a(ng-href="#/{{makeLink(path.slice(0, $index+1))}}") {{x}}
             li.active {{selectedFile}}
       .row
         .col-md-2
           #files.list-group
-            a.list-group-item(ng-repeat="file in files", ng-class="{active: file.name==selectedFile}", ng-href="#/{{file.name.last()!='/' && 'file' || 'files'}}/{{encodeURI2(path, file.name)}}")
+            a.list-group-item(ng-repeat="file in files", ng-class="{active: file.name==selectedFile}", ng-href="#/{{makeLink(path, file.name)}}")
               {{file.name}}
               .badge(ng-show="file.modified") M
         .col-md-5

@@ -22,20 +22,22 @@ function SourceCtrl($scope, $http, $location, $routeParams){
   $scope.path  = [];
   $scope.files = [];
 
-  $scope.encodeURI = function(path, file){
-    var x = path.join('/');
+  $scope.encodePath = function(directory, file){
+    var x = directory.join('/');
     if(file) x += '/'+file;
     return encodeURIComponent(x);
   };
-  $scope.encodeURI2 = function(path, file){ // need to encode twice in templates since the browser decodes the link
-    return escape($scope.encodeURI(path, file));
+  $scope.makeLink = function(path, file){ // need to encode twice in templates since the browser decodes the link
+    var type = !file || _.last(file) == "/" ? 'files' : 'file';
+    return type + '/' + escape($scope.encodePath(path, file));
   };
   function dirname(path) {
     return path.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');;
   }
 
-  $scope.loadFiles = function(){
-    $http.get('/files/'+$scope.encodeURI($scope.path))
+  $scope.loadFiles = function(path){
+    path = path ? path.split('/') : $scope.path;
+    $http.get('/files/'+$scope.encodePath(path))
     .success(function(data){
       $scope.path  = data.path;
       $scope.files = data.files;
@@ -90,6 +92,7 @@ function SourceCtrl($scope, $http, $location, $routeParams){
 
   $scope.newFile = function(text){
     if(!text) text = "";
+    $scope.selectedFile = null;
     source.setValue(text);
     source.clearHistory();
     source.markClean();
@@ -97,13 +100,18 @@ function SourceCtrl($scope, $http, $location, $routeParams){
     $('#result').hide();
   };
   $scope.loadFile = function(file){
+    if(!file) file = $routeParams.file;
     var encFile = encodeURIComponent(file);
-    $scope.path = dirname(file).split('/');
     $http.get('/file/'+encFile)
     .success(function(data){
       $scope.newFile(data);
+      $scope.selectedFile = _.last(file.split('/'));
+      var path = dirname(file).split('/');
+      if($scope.path.join('/') != path.join('/')){
+        $scope.path = path;
+        $scope.loadFiles();
+      }
       console.log("loaded file", file);
-      // $scope.selectedFile = file.split('/').last(); // doesn't update bindings
       $http.get('/result/'+encFile)
       .success(function(data){
         $('#result').show();
@@ -121,27 +129,19 @@ function SourceCtrl($scope, $http, $location, $routeParams){
       }
     });
   };
-  $scope.reloadFile = function(){
-    $scope.loadFile($routeParams.file);
-  };
   // gets called on every route change :(
   // alternative would be to add a route with a controller and a templateUrl pointing to a dummy file
   $scope.$on('$routeChangeSuccess', function(ev){
     // console.log($location, $routeParams);
     if($routeParams.file){
-      $scope.loadFile($routeParams.file);
-      $scope.selectedFile = $routeParams.file.split('/').last();
-      $scope.loadFiles();
+      $scope.loadFile();
       $scope.$parent.title = $routeParams.file;
     }else if($routeParams.files){
-      $scope.path = $routeParams.files.split('/');
       $scope.newFile();
-      $scope.selectedFile = null;
-      $scope.loadFiles();
+      $scope.loadFiles($routeParams.files);
       $scope.$parent.title = $routeParams.files;
     }else{
       $scope.newFile();
-      $scope.selectedFile = null;
       $scope.$parent.title = "";
     }
   });
@@ -158,7 +158,7 @@ function SourceCtrl($scope, $http, $location, $routeParams){
     if(!file){
       file = prompt("New filename:");
       if(!file) return;
-      file = $scope.encodeURI($scope.path, file);
+      file = $scope.encodePath($scope.path, file);
       isNew = true;
     }
     var url = '/file/'+file;
@@ -183,7 +183,7 @@ function SourceCtrl($scope, $http, $location, $routeParams){
     $http.post('/file/'+encodeURIComponent($routeParams.file), {name: name})
     .success(function(){
       console.log("renamed file", $routeParams.file, "to", name);
-      $location.path("/file/"+$scope.encodeURI(dirname($routeParams.file).split('/'), name));
+      $location.path("/file/"+$scope.encodePath(dirname($routeParams.file).split('/'), name));
       $scope.loadFiles();
     });
   };
@@ -200,7 +200,7 @@ function SourceCtrl($scope, $http, $location, $routeParams){
     $http.post('/revert/'+encodeURIComponent(file))
     .success(function(data){
       console.log("reverted", file, ": ", data);
-      $scope.reloadFile();
+      $scope.loadFile();
       $scope.loadFiles();
     });
   };
