@@ -17,7 +17,7 @@ app.config(function ($routeProvider, $locationProvider) {
 
 console.log("angular-ui ok");
 
-function SourceCtrl($scope, $location, $routeParams){
+function SourceCtrl($scope, $http, $location, $routeParams){
   // $scope.path  = 'tests/regression/18-file'.split('/');
   $scope.path  = [];
   $scope.files = [];
@@ -35,19 +35,18 @@ function SourceCtrl($scope, $location, $routeParams){
   }
 
   $scope.loadFiles = function(){
-    $.get('/files/'+$scope.encodeURI($scope.path), {}, function(data){
+    $http.get('/files/'+$scope.encodeURI($scope.path))
+    .success(function(data){
       $scope.path  = data.path;
       $scope.files = data.files;
-      $scope.$apply();
     })
-    .fail(function(){
+    .error(function(){
       console.log('could not load directory');
       alert("The directory doesn't exist! Redirecting...");
       if(history.length > 1){
         history.back();
       }else{
         $location.path("/");
-        $scope.$apply();
       }
     });
   };
@@ -59,8 +58,10 @@ function SourceCtrl($scope, $location, $routeParams){
   });
 
   $scope.loadSpec = function(specFile){
-    $.get('/file/'+encodeURIComponent(specFile), {}, function(data){
+    $http.get('/file/'+encodeURIComponent(specFile))
+    .success(function(data){
       spec.setValue(data);
+      spec.markClean();
       $('#spec-error').hide();
     });
   };
@@ -72,16 +73,16 @@ function SourceCtrl($scope, $location, $routeParams){
       $('#spec-error').toggle(failed);
       $('#spec-controls').toggle(!failed);
     };
-    $.post('/spec/dot', {value: spec.getValue()}, function(data){
+    $http.post('/spec/dot', {value: spec.getValue()})
+    .success(function(data){
       $('#graph').html(Viz(data, "svg"));
       parseError(false);
     })
-    .fail(function(res){
+    .error(function(res){
       console.log(res.responseText);
       var lineno = /Line (.*?):/.exec(res.responseText);
       if(lineno){
         $scope.spec_error_line = lineno[1];
-        $scope.$apply();
       }
       parseError(true);
     });
@@ -98,24 +99,25 @@ function SourceCtrl($scope, $location, $routeParams){
   $scope.loadFile = function(f){
     var ff = decodeURIComponent(f);
     $scope.path = dirname(ff).split('/');
-    $.get('/file/'+f, {}, function(data){
+    $http.get('/file/'+f)
+    .success(function(data){
       $scope.newFile(data);
       console.log("loaded file", ff);
       // $scope.selectedFile = ff.split('/').last(); // doesn't update bindings
-      $.get('/result/'+f, {}, function(data){
+      $http.get('/result/'+f)
+      .success(function(data){
         $('#result').show();
         $("#compile-error").hide();
         $('#output').text(data);
       });
     })
-    .fail(function(){
+    .error(function(){
       console.log('could not load file', ff);
       alert("The file "+ff+" doesn't exist! Redirecting...");
       if(history.length > 1){
         history.back();
       }else{
         $location.path("/");
-        $scope.$apply();
       }
     });
   };
@@ -160,7 +162,8 @@ function SourceCtrl($scope, $location, $routeParams){
       isNew = true;
     }
     var url = '/file/'+file;
-    $.post(url, {value: source.getValue()}, function(){
+    $http.post(url, {value: source.getValue()})
+    .success(function(){
       source.markClean();
       sourceChanged();
       console.log("saved file", file);
@@ -177,7 +180,8 @@ function SourceCtrl($scope, $location, $routeParams){
     }
     var name = prompt("New filename:");
     if(!name) return;
-    $.post('/file/'+$routeParams.file, {name: name}, function(){
+    $http.post('/file/'+$routeParams.file, {name: name})
+    .success(function(){
       console.log("renamed file", $routeParams.file, "to", name);
       $location.path("/file/"+$scope.encodeURI(dirname(decodeURIComponent($routeParams.file)).split('/'), name));
       $scope.loadFiles();
@@ -185,17 +189,16 @@ function SourceCtrl($scope, $location, $routeParams){
   };
   $scope.deleteFile = function(){
     if(!confirm("Delete the file?")) return;
-    $.ajax({url: '/file/'+$routeParams.file,
-      type: 'DELETE',
-      success: function(){
-        $location.path("/");
-        $scope.loadFiles();
-      }
+    $http.delete('/file/'+$routeParams.file)
+    .success(function(){
+      $location.path("/");
+      $scope.loadFiles();
     });
   };
   $scope.revertFile = function(){
     var file = $routeParams.file;
-    $.post('/revert/'+file, {}, function(data){
+    $http.post('/revert/'+file)
+    .success(function(data){
       console.log("reverted", file, ": ", data);
       $scope.reloadFile();
       $scope.loadFiles();
@@ -206,12 +209,13 @@ function SourceCtrl($scope, $location, $routeParams){
     if(!source.isClean()){
       $scope.saveFile();
     }
-    $.get('/run/'+file, {}, function(data){
+    $http.get('/run/'+file)
+    .success(function(data){
       console.log("compile and run", file);
       $('#output').text(data);
       $("#compile-error").hide();
     })
-    .fail(function(res){
+    .error(function(res){
       $('#output').text(res.responseText);
       $("#compile-error").show();
     });
