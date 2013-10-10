@@ -69,11 +69,6 @@ html(ng-app="goblint")
               select#theme(onchange="selectTheme()")
                 include editor-themes.jade
           textarea#source(placeholder="Write new code here or select a file on the left...")
-          script.
-            var editor = CodeMirror.fromTextArea(document.getElementById('source'), {
-              mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default'
-            });
-            editor.on('change', _.throttle(sourceChanged, 200));
           #result
             span.label.label-success
               i.glyphicon.glyphicon-ok.icon-white
@@ -85,11 +80,6 @@ html(ng-app="goblint")
             textarea#output
         .col-md-5
           textarea#spec(placeholder="Write new spec here or select a file on the left...")
-          script.
-            var spec = CodeMirror.fromTextArea(document.getElementById('spec'), {
-              mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default'
-            });
-            spec.on('change', _.debounce(specChanged, 200));
           span#spec-error.label.label-warning
             i.glyphicon.glyphicon-warning-sign.icon-white
             |  parse error on line {{spec_error_line}}
@@ -100,6 +90,18 @@ html(ng-app="goblint")
                 a.btn.btn-default(title="open graph as PNG", ui-jq="tooltip", onclick="$(this).prev().val(spec.getValue()); $(this).parent().submit();"): i.glyphicon.glyphicon-picture
           #graph
     div(ng-view)
+    script.
+      // init CodeMirror on textareas
+      function initEditor(id, changeListener){
+        var editor = CodeMirror.fromTextArea(document.getElementById(id), {
+          mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default'
+        });
+        editor.on('change', changeListener);
+        return editor;
+      }
+      source = initEditor("source", _.throttle(sourceChanged, 200));
+      spec = initEditor("spec", _.debounce(specChanged, 200));
+
     if node_env=="development"
       // livereload snippet
       script.

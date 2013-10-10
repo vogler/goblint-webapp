@@ -89,9 +89,9 @@ function SourceCtrl($scope, $location, $routeParams){
 
   $scope.newFile = function(text){
     if(!text) text = "";
-    editor.setValue(text);
-    editor.clearHistory();
-    editor.markClean();
+    source.setValue(text);
+    source.clearHistory();
+    source.markClean();
     sourceChanged();
     $('#result').hide();
   };
@@ -144,7 +144,7 @@ function SourceCtrl($scope, $location, $routeParams){
     }
   });
   $scope.$on('$locationChangeStart', function(ev){
-    if(!editor.isClean()){
+    if(!source.isClean() || !spec.isClean()){
       if(!confirm("You have unsaved changes! Discard them?"))
         ev.preventDefault(); // stopPropagation
     }
@@ -160,8 +160,8 @@ function SourceCtrl($scope, $location, $routeParams){
       isNew = true;
     }
     var url = '/file/'+file;
-    $.post(url, {value: editor.getValue()}, function(){
-      editor.markClean();
+    $.post(url, {value: source.getValue()}, function(){
+      source.markClean();
       sourceChanged();
       console.log("saved file", file);
       if(isNew){
@@ -171,7 +171,7 @@ function SourceCtrl($scope, $location, $routeParams){
     });
   };
   $scope.renameFile = function(){
-    if(!editor.isClean()){
+    if(!source.isClean()){
       alert("File is dirty, safe first!");
       return;
     }
@@ -203,7 +203,7 @@ function SourceCtrl($scope, $location, $routeParams){
   };
   $scope.runFile = function(){
     var file = $routeParams.file;
-    if(!editor.isClean()){
+    if(!source.isClean()){
       $scope.saveFile();
     }
     $.get('/run/'+file, {}, function(data){
@@ -223,12 +223,12 @@ function selectTheme() {
   var file = theme.split(' ')[0]+'.css';
   if(theme!="default" && !$("head link[rel='stylesheet'][href*='"+file+"']").length) // no default.css && file not added yet
     $(document.head).append($("<link/>").attr({rel: "stylesheet", href: "components/codemirror/theme/"+file}));
-  editor.setOption("theme", theme);
+  source.setOption("theme", theme);
 }
 
 function sourceChanged(){
-  $('#file-clean').toggle(editor.isClean());
-  $('#file-dirty').toggle(!editor.isClean());
+  $('#file-clean').toggle(source.isClean());
+  $('#file-dirty').toggle(!source.isClean());
 }
 function specChanged(){
   $("#spec").scope().updateGraph(); // beter way to get to scope?
