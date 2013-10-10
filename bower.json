@@ -2,17 +2,17 @@
   "name": "goblint-webapp",
   "version": "0.0.1",
   "dependencies": {
-    "angular": "git://github.com/angular/bower-angular.git#~1.0.6",
     "json3": "git://github.com/bestiejs/json3.git#~3.2.4",
     "es5-shim": "git://github.com/kriskowal/es5-shim#~2.0.8",
-    "angular-resource": "git://github.com/angular/bower-angular-resource.git#~1.0.6",
-    "angular-cookies": "git://github.com/angular/bower-angular-cookies.git#~1.0.6",
+    "jquery": "~2.0.3",
+    "underscore": "~1.5.2",
+    "bootstrap": "~3.0.0",
+    "angular": "~1.2.0",
+    "angular-route": "~1.2.0-rc.2",
+    "angular-resource": "~1.2.0",
     "angular-ui": "git://github.com/angular-ui/angular-ui.git#~0.4.0",
-    "jquery": "~1.9.1",
     "codemirror": "git://github.com/marijnh/CodeMirror.git",
     "socket.io-client": "~0.9.11",
-    "bootstrap": "~3.0.0",
-    "sugar": "~1.4.1",
-    "underscore": "~1.5.2"
+    "sugar": "~1.4.1"
   }
 }
