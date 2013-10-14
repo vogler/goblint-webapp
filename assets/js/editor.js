@@ -87,7 +87,7 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
     if(!file){
       file = prompt("New filename:");
       if(!file) return;
-      file = $scope.$parent.folder + file;
+      file = $scope.$parent.cwd + file;
       isNew = true;
     }
     var encFile = encodeURIComponent(file);

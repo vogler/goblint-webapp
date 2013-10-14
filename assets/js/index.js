@@ -6,6 +6,9 @@ function dirname(path){
 function basename(path){
   return path.replace(/\\/g,'/').replace( /.*\//, '' );
 }
+function extension(path){
+  return path.substr(path.lastIndexOf(".")+1);
+}
 
 var app = angular.module('goblint', ['ngRoute', 'ngResource', 'ui']);
 app.config(function ($routeProvider, $locationProvider) {
@@ -27,42 +30,32 @@ app.config(function ($routeProvider, $locationProvider) {
 
 
 app.controller("DirectoryCtrl", function ($scope, $http, $location, $routeParams) {
-  $scope.path  = [];
+  $scope.cwd   = "";
   $scope.files = [];
 
-  $scope.encodePath = function(directory, file){
-    var x = directory.join('/');
-    if(file) x += '/'+file;
-    return encodeURIComponent(x);
-  };
-  $scope.makeLink = function(path, file){ // need to encode twice in templates since the browser decodes the link
-    var type = !file || _.last(file) == "/" ? 'files' : 'source';
-    var link = type + '/' + escape($scope.encodePath(path, file))
-    if($routeParams.spec)
-      link += '/spec/' + escape(encodeURIComponent($routeParams.spec));
+  $scope.makeLink = function(filename, isAbs){ // need to encode twice in templates since the browser decodes the link
+    var type = _.last(filename) == "/" ? "files" : extension(filename) == "spec" ? "spec" : "source";
+    var path = isAbs ? filename : $scope.cwd + filename;
+    var link = type + '/' + escape(encodeURIComponent(path));
+    if($routeParams.spec && type != "spec")
+      link += "/spec/" + escape(encodeURIComponent($routeParams.spec));
+    if($routeParams.source && type == "spec")
+      link = "source/" + escape(encodeURIComponent($routeParams.source)) + '/' + link;
     return link;
   };
-
-  // gets called on every route change :(
-  // alternative would be to add a route with a controller and a templateUrl pointing to a dummy file
-  $scope.$on('$routeChangeSuccess', function(ev){
-    // console.log($routeParams);
-    if($routeParams.source){
-      $scope.$parent.title = basename($routeParams.source);
-      $scope.loadFiles(dirname($routeParams.source));
-    }else if($routeParams.files){
-      $scope.loadFiles($routeParams.files);
-      $scope.$parent.title = $routeParams.files;
-    }else{
-      $scope.$parent.title = "";
-    }
-  });
-
+  $scope.breadcrumb = function(i){
+    if(i == undefined) return $scope.cwd.split('/');
+    return $scope.makeLink(dirname($scope.cwd.split('/').slice(0, i+2).join('/')), true);
+  }
+  $scope.isLoaded = function(filename){
+    var path = $scope.cwd + filename;
+    return path == $routeParams.source || path == $routeParams.spec;
+  };
   $scope.loadFiles = function(path){
-    path = path ? path.split('/') : $scope.path;
-    $http.get('/files/'+$scope.encodePath(path))
+    if(!path) path = $scope.cwd;
+    $http.get('/files/'+encodeURIComponent(path))
     .success(function(data){
-      $scope.path  = data.path;
+      $scope.cwd = path;
       $scope.files = data.files;
     })
     .error(function(){
@@ -80,6 +73,21 @@ app.controller("DirectoryCtrl", function ($scope, $http, $location, $routeParams
   socket.on('files', function(files){
     console.log('socket.io: files updated');
     $scope.loadFiles();
+  });
+
+  // alternative would be to add a route with a controller and a templateUrl pointing to a dummy file
+  $scope.$on('$routeChangeSuccess', function(ev){
+    // console.log($routeParams);
+    var file = $routeParams.source || $routeParams.spec;
+    if(file && !$routeParams.files){
+      $scope.$parent.title = basename(file);
+      $scope.loadFiles(dirname(file));
+    }else if($routeParams.files){
+      $scope.loadFiles($routeParams.files);
+      $scope.$parent.title = $routeParams.files;
+    }else{
+      $scope.$parent.title = "";
+    }
   });
 });
 

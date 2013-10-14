@@ -37,12 +37,11 @@ html(ng-app="goblint")
       .row
         .col-md-12
           ol.breadcrumb
-            li(ng-repeat="x in path"): a(ng-href="#/{{makeLink(path.slice(0, $index+1))}}") {{x}}
-            li.active {{selectedFile}}
+            li(ng-repeat="x in breadcrumb()"): a(ng-href="#/{{breadcrumb($index)}}") {{x}}
       .row
         .col-md-2
           #files.list-group
-            a.list-group-item(ng-repeat="file in files", ng-class="{active: file.name==selectedFile}", ng-href="#/{{makeLink(path, file.name)}}")
+            a.list-group-item(ng-repeat="file in files", ng-class="{active: isLoaded(file.name)}", ng-href="#/{{makeLink(file.name)}}")
               {{file.name}}
               .badge(ng-show="file.modified") M
         .col-md-5(ng-controller="SourceCtrl")
