@@ -16,14 +16,14 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
     $scope.$parent.handle(event, data);
   };
 
-  $scope.onChange = function(){
+  $scope.onChange = _.throttle(function(){
     $scope.clean = $scope.editor.isClean();
     if(!$rootScope.$$phase) { // only one digest allowed at a time...
-      $scope.$apply();
+      $scope.$apply(); // needed since called from outside of angular
     }
-    console.log("editor onChange", $scope.id, $scope.clean);
+    // console.log("editor onChange", $scope.id, $scope.clean);
     emit("change");
-  }
+  }, 100);
 
   $scope.init = function(){
     // console.log("init", $scope.id);

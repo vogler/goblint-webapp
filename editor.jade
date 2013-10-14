@@ -1,12 +1,8 @@
 .panel.panel-default
   .panel-heading
+    i.glyphicon(ng-class="{'glyphicon-check': clean, 'glyphicon-edit': !clean}")
+    |  
     {{file || "New file"}}
-    span(ng-show="clean").label.label-success.pull-right
-      i.glyphicon.glyphicon-check.icon-white
-      |  file clean
-    span(ng-show="!clean").label.label-warning.pull-right
-      i.glyphicon.glyphicon-edit.icon-white
-      |  file dirty
   .panel-body
     .btn-toolbar
       .btn-group

@@ -104,23 +104,17 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams) {
     });
   };
   $scope.handle = function(event, data){
-    console.log("handle", event, "for", $scope.ref.id);
-    // if(data && "file" in data) $scope.ref.file = data.file; // file changed by editor
+    // console.log("handle", event, "for", $scope.ref.id);
     switch(event){
+      case "files":
+        $scope.loadFiles();
+        break;
       case "load":
-        // console.log("parent load", data.file);
         $http.get('/result/'+encodeURIComponent(data.file))
         .success(function(data){
           $scope.output = data;
           $scope.compile_error = false;
         });
-        break;
-      case "files":
-        console.log("parent files");
-        $scope.loadFiles();
-        break;
-      default:
-        console.log("unhandled event", event, "for", $scope.ref.id);
         break;
     }
   };
@@ -128,7 +122,7 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams) {
 
 
 app.controller("SpecCtrl", function ($scope, $http, $location, $routeParams) {
-  $scope.updateGraph = function(){
+  $scope.updateGraph = _.debounce(function(){
     console.log("update graph!");
     $http.post('/spec/dot', {value: $scope.ref.editor.getValue()})
     .success(function(data){
@@ -142,24 +136,19 @@ app.controller("SpecCtrl", function ($scope, $http, $location, $routeParams) {
         $scope.error_line = lineno[1];
       }
     });
-  };
+  }, 200);
   $scope.openImage = function(){
     $("#spec-controls [name=value]").val($scope.ref.editor.getValue());
     $("#spec-controls form").submit();
   };
   $scope.handle = function(event, data){
-    console.log("handle", event, "for", $scope.ref.id);
+    // console.log("handle", event, "for", $scope.ref.id);
     switch(event){
       case "files":
-        console.log("parent files");
         $scope.loadFiles();
         break;
       case "change":
         $scope.updateGraph();
-        // _.throttle(sourceChanged, 200);
-        break;
-      default:
-        console.log("unhandled event", event, "for", $scope.ref.id);
         break;
     }
   };
