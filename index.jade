@@ -29,10 +29,11 @@ html(ng-app="goblint")
     script(src="components/socket.io-client/dist/socket.io.min.js")
     script(src="viz.js")
     != js('index')
+    != js('editor')
 
   body
     include ie.fail.html
-    .container(ng-controller="SourceCtrl")
+    .container(ng-controller="DirectoryCtrl")
       .row
         .col-md-12
           ol.breadcrumb
@@ -44,62 +45,32 @@ html(ng-app="goblint")
             a.list-group-item(ng-repeat="file in files", ng-class="{active: file.name==selectedFile}", ng-href="#/{{makeLink(path, file.name)}}")
               {{file.name}}
               .badge(ng-show="file.modified") M
-        .col-md-5
-          .btn-toolbar
-            .btn-group
-              a.btn.btn-default(title="new file", ui-jq="tooltip", href="#/"): i.glyphicon.glyphicon-file
-              a.btn.btn-default(title="save", ui-jq="tooltip", data-container="body", ng-click="saveFile()"): i.glyphicon.glyphicon-floppy-disk
-              a.btn.btn-default(title="rename", ui-jq="tooltip", ng-click="renameFile()"): i.glyphicon.glyphicon-pencil
-              a.btn.btn-default(title="delete", ui-jq="tooltip", ng-click="deleteFile()"): i.glyphicon.glyphicon-trash
-            .btn-group
-              a.btn.btn-default(title="revert to version from git", ui-jq="tooltip", ng-click="revertFile()"): i.glyphicon.glyphicon-share-alt.icon-flipped
-              a.btn.btn-default(title="compile and run", ui-jq="tooltip", ng-click="runFile()"): i.glyphicon.glyphicon-play
-            .btn-group
-              span#file-clean.label.label-success
-                i.glyphicon.glyphicon-check.icon-white
-                |  file clean
-              span#file-dirty.label.label-warning
-                i.glyphicon.glyphicon-edit.icon-white
-                |  file dirty
-            .btn-group.form-inline.pull-right
-              label(for="theme") Theme:
-              select#theme(onchange="selectTheme()")
-                include editor-themes.jade
-          textarea#source(placeholder="Write new code here or select a file on the left...")
-          #result
+        .col-md-5(ng-controller="SourceCtrl")
+          editor#source(ref="ref")
+            a.btn.btn-default(title="compile and run", ui-jq="tooltip", ng-click="run()"): i.glyphicon.glyphicon-play
+          #result(ng-show="ref.file")
             span.label.label-success
               i.glyphicon.glyphicon-ok.icon-white
               |  no warnings
-            span#compile-error.label.label-warning
+            span(ng-show="compile_error").label.label-warning
               i.glyphicon.glyphicon-warning-sign.icon-white
               |  compile error
             br
-            textarea#output
-        .col-md-5
-          textarea#spec(placeholder="Write new spec here or select a file on the left...")
-          span#spec-error.label.label-warning
+            textarea#output(ng-model="output")
+        .col-md-5(ng-controller="SpecCtrl")
+          editor#spec(ref="ref")
+          span(ng-show="error_line").label.label-warning
             i.glyphicon.glyphicon-warning-sign.icon-white
-            |  parse error on line {{spec_error_line}}
-          #spec-controls.btn-toolbar
+            |  parse error on line {{error_line}}
+          #spec-controls(ng-show="!error_line").btn-toolbar
             .btn-group
               form(action="/spec/png", method="POST", target="_blank")
                 input(type="hidden", name="value")
-                a.btn.btn-default(title="open graph as PNG", ui-jq="tooltip", onclick="$(this).prev().val(spec.getValue()); $(this).parent().submit();"): i.glyphicon.glyphicon-picture
+                a.btn.btn-default(title="open graph as PNG", ui-jq="tooltip", ng-click="openImage()"): i.glyphicon.glyphicon-picture
           #graph
     div(ng-view)
-    script.
-      // init CodeMirror on textareas
-      function initEditor(id, changeListener){
-        var editor = CodeMirror.fromTextArea(document.getElementById(id), {
-          mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default'
-        });
-        editor.on('change', changeListener);
-        return editor;
-      }
-      source = initEditor("source", _.throttle(sourceChanged, 200));
-      spec = initEditor("spec", _.debounce(specChanged, 200));
 
-    if node_env=="development"
+    if node_env=="development" && false
       // livereload snippet
       script.
         document.write('<script src="http://'

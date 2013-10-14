@@ -1,0 +1,23 @@
+.panel.panel-default
+  .panel-heading
+    {{file || "New file"}}
+    span(ng-show="clean").label.label-success.pull-right
+      i.glyphicon.glyphicon-check.icon-white
+      |  file clean
+    span(ng-show="!clean").label.label-warning.pull-right
+      i.glyphicon.glyphicon-edit.icon-white
+      |  file dirty
+  .panel-body
+    .btn-toolbar
+      .btn-group
+        a.btn.btn-default(title="new file", ui-jq="tooltip", ng-click="new()"):    i.glyphicon.glyphicon-file
+        a.btn.btn-default(title="save",     ui-jq="tooltip", ng-click="save()"):   i.glyphicon.glyphicon-floppy-disk
+        a.btn.btn-default(title="rename",   ui-jq="tooltip", ng-click="rename()", ng-disabled="!file"): i.glyphicon.glyphicon-pencil
+        a.btn.btn-default(title="delete",   ui-jq="tooltip", ng-click="delete()", ng-disabled="!file"): i.glyphicon.glyphicon-trash
+        a.btn.btn-default(title="revert to version from git", ui-jq="tooltip", ng-click="revert()", ng-disabled="!file"): i.glyphicon.glyphicon-share-alt.icon-flipped
+      .btn-group(ng-transclude)
+      .btn-group.form-inline.pull-right
+        label(for="theme") Theme:
+        select(ng-model="theme", ng-change="selectTheme()")
+          include editor-themes.jade
+    textarea(id="{{id}}Text", placeholder="Write new code here or select a file")

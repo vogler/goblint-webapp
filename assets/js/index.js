@@ -1,13 +1,23 @@
 'use strict';
 
+function dirname(path){
+  return path.replace(/\\/g,'/').replace(/\/[^\/]*$/, '') + '/';
+}
+function basename(path){
+  return path.replace(/\\/g,'/').replace( /.*\//, '' );
+}
+
 var app = angular.module('goblint', ['ngRoute', 'ngResource', 'ui']);
 app.config(function ($routeProvider, $locationProvider) {
     $routeProvider
-      // .when('/', {})
+      // .when('/', {}) // routes only used if a ng-view exists :(
       .when('/files/:files', {})
-      .when('/file/:file', {}) // only used if a ng-view exists :(
+      .when('/files/:files/spec/:spec', {})
+      .when('/source/:source', {})
+      .when('/spec/:spec', {})
+      .when('/source/:source/spec/:spec', {}) // no optional routes :(
       .otherwise({
-        redirectTo: '/files/' + encodeURIComponent('tests/regression/18-file')
+        redirectTo: '/source/' + encodeURIComponent('tests/regression/18-file/01-ok.c') + '/spec/' + encodeURIComponent('src/spec/file.spec')
       });
       //- $locationProvider.html5Mode(true); // html5 pushState
   })
@@ -15,10 +25,8 @@ app.config(function ($routeProvider, $locationProvider) {
     jq: {tooltip: {container: 'body'}} // placement: 'right'
   });
 
-console.log("angular-ui ok");
 
-function SourceCtrl($scope, $http, $location, $routeParams){
-  // $scope.path  = 'tests/regression/18-file'.split('/');
+app.controller("DirectoryCtrl", function ($scope, $http, $location, $routeParams) {
   $scope.path  = [];
   $scope.files = [];
 
@@ -28,12 +36,27 @@ function SourceCtrl($scope, $http, $location, $routeParams){
     return encodeURIComponent(x);
   };
   $scope.makeLink = function(path, file){ // need to encode twice in templates since the browser decodes the link
-    var type = !file || _.last(file) == "/" ? 'files' : 'file';
-    return type + '/' + escape($scope.encodePath(path, file));
+    var type = !file || _.last(file) == "/" ? 'files' : 'source';
+    var link = type + '/' + escape($scope.encodePath(path, file))
+    if($routeParams.spec)
+      link += '/spec/' + escape(encodeURIComponent($routeParams.spec));
+    return link;
   };
-  function dirname(path) {
-    return path.replace(/\\/g,'/').replace(/\/[^\/]*$/, '');;
-  }
+
+  // gets called on every route change :(
+  // alternative would be to add a route with a controller and a templateUrl pointing to a dummy file
+  $scope.$on('$routeChangeSuccess', function(ev){
+    // console.log($routeParams);
+    if($routeParams.source){
+      $scope.$parent.title = basename($routeParams.source);
+      $scope.loadFiles(dirname($routeParams.source));
+    }else if($routeParams.files){
+      $scope.loadFiles($routeParams.files);
+      $scope.$parent.title = $routeParams.files;
+    }else{
+      $scope.$parent.title = "";
+    }
+  });
 
   $scope.loadFiles = function(path){
     path = path ? path.split('/') : $scope.path;
@@ -58,182 +81,86 @@ function SourceCtrl($scope, $http, $location, $routeParams){
     console.log('socket.io: files updated');
     $scope.loadFiles();
   });
+});
 
-  $scope.loadSpec = function(specFile){
-    $http.get('/file/'+encodeURIComponent(specFile))
+
+app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams) {
+  $scope.compile_error = false;
+
+  $scope.run = function(){  // extension to btn-toolbar
+    var file = $scope.ref.file;
+    if(!$scope.ref.editor.isClean() || !$scope.ref.file){
+      $scope.ref.save();
+    }
+    $http.get('/run/'+encodeURIComponent(file))
     .success(function(data){
-      spec.setValue(data);
-      spec.markClean();
-      $('#spec-error').hide();
+      console.log("compile and run", file);
+      $scope.output = data;
+      $scope.compile_error = false;
+    })
+    .error(function(data){
+      $scope.output = data;
+      $scope.compile_error = true;
     });
   };
-  $scope.loadSpec('src/spec/file.spec');
+  $scope.handle = function(event, data){
+    console.log("handle", event, "for", $scope.ref.id);
+    // if(data && "file" in data) $scope.ref.file = data.file; // file changed by editor
+    switch(event){
+      case "load":
+        // console.log("parent load", data.file);
+        $http.get('/result/'+encodeURIComponent(data.file))
+        .success(function(data){
+          $scope.output = data;
+          $scope.compile_error = false;
+        });
+        break;
+      case "files":
+        console.log("parent files");
+        $scope.loadFiles();
+        break;
+      default:
+        console.log("unhandled event", event, "for", $scope.ref.id);
+        break;
+    }
+  };
+});
 
+
+app.controller("SpecCtrl", function ($scope, $http, $location, $routeParams) {
   $scope.updateGraph = function(){
     console.log("update graph!");
-    var parseError = function(failed){
-      $('#spec-error').toggle(failed);
-      $('#spec-controls').toggle(!failed);
-    };
-    $http.post('/spec/dot', {value: spec.getValue()})
+    $http.post('/spec/dot', {value: $scope.ref.editor.getValue()})
     .success(function(data){
       $('#graph').html(Viz(data, "svg"));
-      parseError(false);
+      $scope.error_line = false;
     })
     .error(function(data){
       console.log(data);
       var lineno = /Line (.*?):/.exec(data);
       if(lineno){
-        $scope.spec_error_line = lineno[1];
+        $scope.error_line = lineno[1];
       }
-      parseError(true);
     });
-  }
-
-  $scope.newFile = function(text){
-    if(!text) text = "";
-    $scope.selectedFile = null;
-    source.setValue(text);
-    source.clearHistory();
-    source.markClean();
-    sourceChanged();
-    $('#result').hide();
   };
-  $scope.loadFile = function(file){
-    if(!file) file = $routeParams.file;
-    var encFile = encodeURIComponent(file);
-    $http.get('/file/'+encFile)
-    .success(function(data){
-      $scope.newFile(data);
-      $scope.selectedFile = _.last(file.split('/'));
-      var path = dirname(file).split('/');
-      if($scope.path.join('/') != path.join('/')){
-        $scope.path = path;
+  $scope.openImage = function(){
+    $("#spec-controls [name=value]").val($scope.ref.editor.getValue());
+    $("#spec-controls form").submit();
+  };
+  $scope.handle = function(event, data){
+    console.log("handle", event, "for", $scope.ref.id);
+    switch(event){
+      case "files":
+        console.log("parent files");
         $scope.loadFiles();
-      }
-      console.log("loaded file", file);
-      $http.get('/result/'+encFile)
-      .success(function(data){
-        $('#result').show();
-        $("#compile-error").hide();
-        $('#output').text(data);
-      });
-    })
-    .error(function(){
-      console.log('could not load file', file);
-      alert("The file "+file+" doesn't exist! Redirecting...");
-      if(history.length > 1){
-        history.back();
-      }else{
-        $location.path("/");
-      }
-    });
-  };
-  // gets called on every route change :(
-  // alternative would be to add a route with a controller and a templateUrl pointing to a dummy file
-  $scope.$on('$routeChangeSuccess', function(ev){
-    // console.log($location, $routeParams);
-    if($routeParams.file){
-      $scope.loadFile();
-      $scope.$parent.title = $routeParams.file;
-    }else if($routeParams.files){
-      $scope.newFile();
-      $scope.loadFiles($routeParams.files);
-      $scope.$parent.title = $routeParams.files;
-    }else{
-      $scope.newFile();
-      $scope.$parent.title = "";
+        break;
+      case "change":
+        $scope.updateGraph();
+        // _.throttle(sourceChanged, 200);
+        break;
+      default:
+        console.log("unhandled event", event, "for", $scope.ref.id);
+        break;
     }
-  });
-  $scope.$on('$locationChangeStart', function(ev){
-    if(!source.isClean() || !spec.isClean()){
-      if(!confirm("You have unsaved changes! Discard them?"))
-        ev.preventDefault(); // stopPropagation
-    }
-  });
-
-  $scope.saveFile = function(){
-    var file = encodeURIComponent($routeParams.file);
-    var isNew = false;
-    if(!file){
-      file = prompt("New filename:");
-      if(!file) return;
-      file = $scope.encodePath($scope.path, file);
-      isNew = true;
-    }
-    var url = '/file/'+file;
-    $http.post(url, {value: source.getValue()})
-    .success(function(){
-      source.markClean();
-      sourceChanged();
-      console.log("saved file", file);
-      if(isNew){
-        $location.path(url);
-      }
-      $scope.loadFiles();
-    });
   };
-  $scope.renameFile = function(){
-    if(!source.isClean()){
-      alert("File is dirty, safe first!");
-      return;
-    }
-    var name = prompt("New filename:");
-    if(!name) return;
-    $http.post('/file/'+encodeURIComponent($routeParams.file), {name: name})
-    .success(function(){
-      console.log("renamed file", $routeParams.file, "to", name);
-      $location.path("/file/"+$scope.encodePath(dirname($routeParams.file).split('/'), name));
-      $scope.loadFiles();
-    });
-  };
-  $scope.deleteFile = function(){
-    if(!confirm("Delete the file?")) return;
-    $http.delete('/file/'+encodeURIComponent($routeParams.file))
-    .success(function(){
-      $location.path("/");
-      $scope.loadFiles();
-    });
-  };
-  $scope.revertFile = function(){
-    var file = $routeParams.file;
-    $http.post('/revert/'+encodeURIComponent(file))
-    .success(function(data){
-      console.log("reverted", file, ": ", data);
-      $scope.loadFile();
-      $scope.loadFiles();
-    });
-  };
-  $scope.runFile = function(){
-    var file = $routeParams.file;
-    if(!source.isClean()){
-      $scope.saveFile();
-    }
-    $http.get('/run/'+encodeURIComponent(file))
-    .success(function(data){
-      console.log("compile and run", file);
-      $('#output').text(data);
-      $("#compile-error").hide();
-    })
-    .error(function(data){
-      $('#output').text(data);
-      $("#compile-error").show();
-    });
-  };
-}
-
-function selectTheme() {
-  var theme = $("#theme").val();
-  var file = theme.split(' ')[0]+'.css';
-  if(theme!="default" && !$("head link[rel='stylesheet'][href*='"+file+"']").length) // no default.css && file not added yet
-    $(document.head).append($("<link/>").attr({rel: "stylesheet", href: "components/codemirror/theme/"+file}));
-  source.setOption("theme", theme);
-}
-
-function sourceChanged(){
-  $('#file-clean').toggle(source.isClean());
-  $('#file-dirty').toggle(!source.isClean());
-}
-function specChanged(){
-  $("#spec").scope().updateGraph(); // beter way to get to scope?
-}
+});

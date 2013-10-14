@@ -21,6 +21,7 @@ app.configure ->
   # app.use(express.logger());
   app.set "port", process.env.PORT or 3000
   app.set "views", __dirname + ""
+  app.use express.compress()
   app.use express.bodyParser() # needed for req.files
   app.use express.methodOverride() # hidden input _method for put/del
   app.use require('connect-assets')()
@@ -37,6 +38,9 @@ srcPath = path.normalize(__dirname + "/..") # goblint path (should be root of gi
 app.get "/", (req, res) ->
   res.render "index.jade",
     node_env: process.env.NODE_ENV ? "development"
+
+app.get "/partial/:name", (req, res) ->
+  res.render req.params.name+".jade"
 
 Array::partition = (p) ->
   @.reduce (([a,b], c) -> if p(c) then [a.concat(c),b] else [a,b.concat(c)]), [[],[]]
