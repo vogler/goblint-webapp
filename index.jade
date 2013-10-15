@@ -47,6 +47,7 @@ html(ng-app="goblint")
         .col-md-5(ng-controller="SourceCtrl")
           editor#source(ref="ref")
             a.btn.btn-default(title="compile and run", ui-jq="tooltip", ng-click="run()"): i.glyphicon.glyphicon-play
+            a.btn.btn-default(title="open CIL CFG",    ui-jq="tooltip", ng-click="cfg()", ng-disabled="!ref.file"): i.glyphicon.glyphicon-picture
           #result(ng-show="ref.file")
             span.label.label-success
               i.glyphicon.glyphicon-ok.icon-white
@@ -63,10 +64,10 @@ html(ng-app="goblint")
             |  parse error on line {{error_line}}
           #spec-controls(ng-show="!error_line").btn-toolbar
             .btn-group
-              form(action="/spec/png", method="POST", target="_blank")
-                input(type="hidden", name="value")
-                a.btn.btn-default(title="open graph as PNG", ui-jq="tooltip", ng-click="openImage()"): i.glyphicon.glyphicon-picture
+              a.btn.btn-default(title="open graph as PNG", ui-jq="tooltip", ng-click="openImage()"): i.glyphicon.glyphicon-picture
           #graph
+    form#helperform(method="POST", target="_blank")
+      input(type="hidden", name="value")
     div(ng-view)
 
     if node_env=="development" && false

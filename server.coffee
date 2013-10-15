@@ -153,7 +153,7 @@ app.post "/spec/:type", (req, res) ->
     spec.stdout.pipe ps
     spec.stderr.pipe ps
   else if req.params.type == "png"
-    dot = spawn "dot", ["-Tpng", ]
+    dot = spawn "dot", ["-Tpng"]
     spec.stdout.pipe dot.stdin
     dot.stdout.pipe ps
   else
@@ -168,6 +168,26 @@ app.post "/spec/:type", (req, res) ->
     ps.resume()
   spec.stdin.write req.body.value
   spec.stdin.end()
+
+app.get "/cfg/:file", (req, res) ->
+  file = path.join(srcPath, decodeURIComponent(req.params.file))
+  console.log "generating cfg for file", file
+  cmd = "../../goblint --set justcfg true "+file+" && cat cfg.dot"
+  exec cmd, cwd: "./tmp", (error, stdout, stderr) ->
+    # remove goblint's non-multithreaded program warning from cfg.dot
+    stdout = stdout.replace(/NB[\s\S]*?(digraph)/, "$1")
+    # escape quotes in labels, otherwise dot fails!
+    re = /label ?= ?"(.*?)"] ?;/g
+    escaped = stdout
+    while m = re.exec(stdout)
+      x = m[1]
+      x = x.replace(/\\/g, '\\\\')
+      x = x.replace(/"/g, '\\"')
+      escaped = escaped.replace(m[1], x)
+    dot = spawn "dot", ["-Tpng"]
+    dot.stdout.pipe res
+    dot.stdin.write escaped
+    dot.stdin.end()
 
 
 # watch files and inform clients on changes

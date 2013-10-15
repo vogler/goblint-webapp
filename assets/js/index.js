@@ -1,10 +1,10 @@
 'use strict';
 
 function dirname(path){
-  return path.replace(/\\/g,'/').replace(/\/[^\/]*$/, '') + '/';
+  return path.replace(/\\/g, '/').replace(/\/[^\/]*$/, '') + '/';
 }
 function basename(path){
-  return path.replace(/\\/g,'/').replace( /.*\//, '' );
+  return path.replace(/\\/g, '/').replace(/.*\//, '');
 }
 function extension(path){
   return path.substr(path.lastIndexOf(".")+1);
@@ -96,13 +96,13 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams) {
   $scope.compile_error = false;
 
   $scope.run = function(){  // extension to btn-toolbar
-    var file = $scope.ref.file;
     if(!$scope.ref.editor.isClean() || !$scope.ref.file){
       $scope.ref.save();
     }
-    $http.get('/run/'+encodeURIComponent(file))
+    if(!$scope.ref.file) return;
+    $http.get('/run/'+encodeURIComponent($scope.ref.file))
     .success(function(data){
-      console.log("compile and run", file);
+      console.log("compile and run", $scope.ref.file);
       $scope.output = data;
       $scope.compile_error = false;
     })
@@ -110,6 +110,13 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams) {
       $scope.output = data;
       $scope.compile_error = true;
     });
+  };
+  $scope.cfg = function(){
+    if(!$scope.ref.editor.isClean() || !$scope.ref.file){
+      $scope.ref.save();
+    }
+    if(!$scope.ref.file) return;
+    window.open("/cfg/"+encodeURIComponent($scope.ref.file));
   };
   $scope.handle = function(event, data){
     // console.log("handle", event, "for", $scope.ref.id);
@@ -146,8 +153,9 @@ app.controller("SpecCtrl", function ($scope, $http, $location, $routeParams) {
     });
   }, 200);
   $scope.openImage = function(){
-    $("#spec-controls [name=value]").val($scope.ref.editor.getValue());
-    $("#spec-controls form").submit();
+    var form = $("#helperform");
+    form.children("[name=value]").val($scope.ref.editor.getValue());
+    form.attr("action", "/spec/png").submit();
   };
   $scope.handle = function(event, data){
     // console.log("handle", event, "for", $scope.ref.id);
