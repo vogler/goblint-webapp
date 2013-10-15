@@ -1,6 +1,11 @@
 function initEditor(id, changeListener){
   var editor = CodeMirror.fromTextArea(document.getElementById(id), {
-    mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default'
+    mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default',
+    extraKeys: {
+      "F11": function(cm) {
+        cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+      }
+    }
   });
   editor.on('change', changeListener);
   return editor;
@@ -147,6 +152,11 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
       $(document.head).append($("<link/>").attr({rel: "stylesheet", href: "components/codemirror/theme/"+file}));
     $scope.editor.setOption("theme", theme);
   }
+  $scope.fullscreen = function(){
+    var cm = $scope.editor;
+    cm.setOption("fullScreen", !cm.getOption("fullScreen"));
+    cm.focus();
+  };
 });
 
 app.directive('editor', function($timeout) {

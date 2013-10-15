@@ -11,6 +11,8 @@
         a.btn.btn-default(title="rename",   ui-jq="tooltip", ng-click="rename()", ng-disabled="!file"): i.glyphicon.glyphicon-pencil
         a.btn.btn-default(title="delete",   ui-jq="tooltip", ng-click="delete()", ng-disabled="!file"): i.glyphicon.glyphicon-trash
         a.btn.btn-default(title="revert to version from git", ui-jq="tooltip", ng-click="revert()", ng-disabled="!file"): i.glyphicon.glyphicon-share-alt.icon-flipped
+      .btn-group
+        a.btn.btn-default(title="fullscreen (toggle with F11)", ui-jq="tooltip", ng-click="fullscreen()"): i.glyphicon.glyphicon-fullscreen
       .btn-group(ng-transclude)
       .btn-group.form-inline.pull-right
         label(for="theme") Theme:
