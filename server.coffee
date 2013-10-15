@@ -126,7 +126,7 @@ app.post "/revert/:file", (req, res) ->
 
 app.get "/result/:file", (req, res) ->
   file = path.join(srcPath, decodeURIComponent(req.params.file))
-  cmd = "../goblint --sets ana.activated[0][+] file --sets result pretty "+file
+  cmd = "../goblint --sets ana.activated[0][+] file --sets result none "+file
   exec cmd, (error, stdout, stderr) ->
     sys.print "stderr:", stderr
     res.send stdout

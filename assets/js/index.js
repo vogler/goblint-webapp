@@ -1,15 +1,14 @@
 'use strict';
 
-function dirname(path){
-  return path.replace(/\\/g, '/').replace(/\/[^\/]*$/, '') + '/';
-}
-function basename(path){
-  return path.replace(/\\/g, '/').replace(/.*\//, '');
-}
-function extension(path){
-  return path.substr(path.lastIndexOf(".")+1);
-}
+// path handling
+function dirname(path){   return path.replace(/\\/g, '/').replace(/\/[^\/]*$/, '') + '/'; }
+function basename(path){  return path.replace(/\\/g, '/').replace(/.*\//, ''); }
+function extension(path){ return path.substr(path.lastIndexOf(".")+1); }
+// functional stuff
+function filterMap(xs, f){ return _.chain(xs).map(f).compact().value(); };
 
+
+// angular
 var app = angular.module('goblint', ['ngRoute', 'ngResource', 'ui']);
 app.config(function ($routeProvider, $locationProvider) {
     $routeProvider
@@ -129,6 +128,17 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams) {
         .success(function(data){
           $scope.output = data;
           $scope.compile_error = false;
+          var xs = filterMap(data.split('\n'), function(x){
+            // MAYBE writing to unopened file handle fp [30m(/home/ralf/analyzer/tests/regression/18-file/03-if-close.c:9)[0;0;00m
+            var m = /(MAYBE )?(.*?) .{5}\(.*?:(.*?)\)/.exec(x);
+            if(m) return [parseInt(m[3]), m[2], m[1]=="MAYBE "];
+          });
+          console.log(xs);
+          // var xs = [
+          //   [1, "foo"],
+          //   [8, "bar", true]
+          // ];
+          xs.forEach(function(x){ $scope.ref.warnText.apply(this, x); });
         });
         break;
     }
@@ -143,12 +153,15 @@ app.controller("SpecCtrl", function ($scope, $http, $location, $routeParams) {
     .success(function(data){
       $('#graph').html(Viz(data, "svg"));
       $scope.error_line = false;
+      $scope.ref.clearWarnings();
     })
     .error(function(data){
       console.log(data);
       var lineno = /Line (.*?):/.exec(data);
       if(lineno){
         $scope.error_line = lineno[1];
+        $scope.ref.clearWarnings();
+        $scope.ref.warnMarker(lineno[1]);
       }
     });
   }, 200);

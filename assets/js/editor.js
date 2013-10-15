@@ -1,6 +1,7 @@
 function initEditor(id, changeListener){
   var editor = CodeMirror.fromTextArea(document.getElementById(id), {
     mode: 'text/x-csrc', lineNumbers: true, matchBrackets: true, autoCloseBrackets: true, highlightSelectionMatches: true, theme: 'default',
+    gutters: ["CodeMirror-linenumbers", "warnings"],
     extraKeys: {
       "F11": function(cm) {
         cm.setOption("fullScreen", !cm.getOption("fullScreen"));
@@ -156,6 +157,33 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
     var cm = $scope.editor;
     cm.setOption("fullScreen", !cm.getOption("fullScreen"));
     cm.focus();
+  };
+
+  function makeMarker(maybe) {
+    var x = document.createElement("i");
+    x.className = "glyphicon glyphicon-" + (maybe ? "flash" : "remove");
+    x.style.color = maybe ? "#f0ad4e" : "#d9534f";
+    // x.innerHTML = "●";
+    return x;
+  }
+  function makeWarning(text, maybe) {
+    var x = document.createElement("span");
+    x.className = "label label-" + (maybe ? "warning" : "danger");
+    x.innerText = text;
+    return x;
+  }
+  $scope.warnMarker = function(line, maybe){
+    $scope.editor.setGutterMarker(line-1, "warnings", makeMarker(maybe));
+  };
+  $scope.lineWidgets = [];
+  $scope.warnText = function(line, text, maybe){
+    $scope.warnMarker(line, maybe);
+    $scope.lineWidgets.push($scope.editor.addLineWidget(line-1, makeWarning(text, maybe)));
+  };
+  $scope.clearWarnings = function(){
+    $scope.editor.clearGutter("warnings");
+    $scope.lineWidgets.forEach(function(x){ x.clear(); });
+    $scope.lineWidgets = [];
   };
 });
 

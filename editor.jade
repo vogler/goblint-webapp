@@ -13,6 +13,8 @@
         a.btn.btn-default(title="revert to version from git", ui-jq="tooltip", ng-click="revert()", ng-disabled="!file"): i.glyphicon.glyphicon-share-alt.icon-flipped
       .btn-group
         a.btn.btn-default(title="fullscreen (toggle with F11)", ui-jq="tooltip", ng-click="fullscreen()"): i.glyphicon.glyphicon-fullscreen
+        a.btn.btn-default(title="warn", ui-jq="tooltip", ng-click="warnText(5, 'foo')"): i.glyphicon.glyphicon-plus
+        a.btn.btn-default(title="clear", ui-jq="tooltip", ng-click="clearWarnings()"): i.glyphicon.glyphicon-remove
       .btn-group(ng-transclude)
       .btn-group.form-inline.pull-right
         label(for="theme") Theme:
