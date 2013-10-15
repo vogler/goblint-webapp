@@ -15,7 +15,11 @@
     "coffee-script": "~1.6.3",
     "socket.io": "~0.9.16",
     "pause-stream": "0.0.11",
-    "tmp": "0.0.21"
+    "tmp": "0.0.21",
+    "bower": "~1.2.7"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "scripts": {
+    "postinstall": "./node_modules/bower/bin/bower install"
+  }
 }
