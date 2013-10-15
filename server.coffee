@@ -32,7 +32,8 @@ app.configure "development", -> # default, if NODE_ENV is not set
 
 
 # configure paths
-srcPath = path.normalize(__dirname + "/..") # goblint path (should be root of git repo)
+srcPath = path.normalize(__dirname + if fs.existsSync "../tests" then "/.." else "/tmp") # goblint path (should be root of git repo), otherwise use tmp
+fs.mkdirSync "tmp" unless fs.existsSync "tmp/"
 
 # routes
 app.get "/", (req, res) ->
@@ -130,7 +131,6 @@ app.get "/result/:file", (req, res) ->
     sys.print "stderr:", stderr
     res.send stdout
 
-fs.mkdirSync "tmp" unless fs.existsSync "tmp/"
 app.get "/run/:file", (req, res) ->
   file = path.join(srcPath, decodeURIComponent(req.params.file))
   baseFile = path.basename file
