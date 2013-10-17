@@ -37,7 +37,7 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
     var routeChanged = function(){
       // console.log("editor", $scope.id, "$routeChangeSuccess");
       var file = $routeParams[$scope.id];
-      if(file){
+      if(file && file != $scope.file){
         $scope.load(file);
       }else{
         // $scope.new();
@@ -173,7 +173,11 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
     return x;
   }
   $scope.warnMarker = function(line, maybe){
-    $scope.editor.setGutterMarker(line-1, "warnings", makeMarker(maybe));
+    var markers = $scope.editor.lineInfo(line-1).gutterMarkers;
+    // marker with icon "remove" is more important -> don't replace it with icon "flash"
+    if(!(markers && "warnings" in markers && /remove/.test(markers.warnings.className))){
+      $scope.editor.setGutterMarker(line-1, "warnings", makeMarker(maybe));
+    }
   };
   $scope.lineWidgets = [];
   $scope.warnText = function(line, text, maybe){

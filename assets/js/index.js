@@ -133,11 +133,6 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams) {
             var m = /(MAYBE )?(.*?) .{5}\(.*?:(.*?)\)/.exec(x);
             if(m) return [parseInt(m[3]), m[2], m[1]=="MAYBE "];
           });
-          console.log(xs);
-          // var xs = [
-          //   [1, "foo"],
-          //   [8, "bar", true]
-          // ];
           xs.forEach(function(x){ $scope.ref.warnText.apply(this, x); });
         });
         break;
