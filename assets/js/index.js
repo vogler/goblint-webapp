@@ -6,6 +6,15 @@ function basename(path){  return path.replace(/\\/g, '/').replace(/.*\//, ''); }
 function extension(path){ return path.substr(path.lastIndexOf(".")+1); }
 // functional stuff
 function filterMap(xs, f){ return _.chain(xs).map(f).compact().value(); };
+// REST
+function postToNewWindow(url, values){
+    var form = $("#helperform");
+    form.children("input").remove();
+    for(var k in values){
+      form.append($('<input type="hidden" name="'+k+'"/>').val(values[k]));
+    }
+    form.attr("action", url).submit();
+}
 
 
 // angular
@@ -95,12 +104,9 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams) {
   $scope.compile_error = false;
 
   $scope.run = function(){  // extension to btn-toolbar
-    if(!$scope.ref.editor.isClean() || !$scope.ref.file){
-      $scope.ref.save();
-    }
-    if(!$scope.ref.file) return;
-    $http.get('/run/'+encodeURIComponent($scope.ref.file))
-    .success(function(data){
+    var url = '/run/'+encodeURIComponent($scope.ref.file);
+    var req = !$scope.ref.editor.isClean() || !$scope.ref.file ? $http.post(url, {value: $scope.ref.editor.getValue()}) : $http.get(url);
+    req.success(function(data){
       console.log("compile and run", $scope.ref.file);
       $scope.output = data;
       $scope.compile_error = false;
@@ -111,11 +117,12 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams) {
     });
   };
   $scope.cfg = function(){
+    var url = "/cfg/"+encodeURIComponent($scope.ref.file);
     if(!$scope.ref.editor.isClean() || !$scope.ref.file){
-      $scope.ref.save();
+      postToNewWindow(url, {value: $scope.ref.editor.getValue()});
+    }else{
+      window.open(url);
     }
-    if(!$scope.ref.file) return;
-    window.open("/cfg/"+encodeURIComponent($scope.ref.file));
   };
   $scope.handle = function(event, data){
     // console.log("handle", event, "for", $scope.ref.id);
@@ -161,9 +168,7 @@ app.controller("SpecCtrl", function ($scope, $http, $location, $routeParams) {
     });
   }, 200);
   $scope.openImage = function(){
-    var form = $("#helperform");
-    form.children("[name=value]").val($scope.ref.editor.getValue());
-    form.attr("action", "/spec/png").submit();
+    postToNewWindow("/spec/png", {value: $scope.ref.editor.getValue()});
   };
   $scope.handle = function(event, data){
     // console.log("handle", event, "for", $scope.ref.id);

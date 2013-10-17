@@ -127,6 +127,16 @@ app.post "/revert/:file", (req, res) ->
     sys.print "stderr:", stderr
     res.send stdout
 
+# generic way to allow 'get action file' and 'post action file? value'
+app.handleFile = (route, f) -> # f is (res, file, value?)
+  app.get route+"/:file", (req, res) -> # use if file's content should be used
+      f res, path.join(srcPath, decodeURIComponent(req.params.file))
+  app.post route+"/:file?", (req, res) -> # use if there are unsaved changes (file is optional)
+    baseFile = if req.params.file then path.basename req.params.file else "" # avoid 'undefined'
+    # somehow goblint and clang have problem with files that don't end in .c
+    tmp.tmpName {template: "./tmp/"+baseFile+"-XXXXXX"+path.extname(baseFile)}, (err, tmpPath) ->
+      f res, path.resolve(tmpPath), req.body.value
+
 # SourceCtrl
 app.get "/result/:file", (req, res) ->
   file = path.join(srcPath, decodeURIComponent(req.params.file))
@@ -135,11 +145,11 @@ app.get "/result/:file", (req, res) ->
     sys.print "stderr:", stderr
     res.send stdout
 
-app.get "/run/:file", (req, res) ->
-  file = path.join(srcPath, decodeURIComponent(req.params.file))
+app.handleFile "/run", (res, file, value) ->
+  if value # write value to file (clang needs some file as input)
+    fs.writeFileSync file, value
   baseFile = path.basename file
   tmp.tmpName {template: "./tmp/"+baseFile+"-XXXXXX"}, (err, tmpPath) ->
-    throw err if err
     console.log "temporary path:", tmpPath
     cmd = "clang "+file+" -o "+tmpPath
     exec cmd, (error, stdout, stderr) ->
@@ -149,10 +159,12 @@ app.get "/run/:file", (req, res) ->
       exec "./"+path.basename(tmpPath), cwd: path.dirname(tmpPath), (error, stdout, stderr) ->
         res.send stdout
 
-app.get "/cfg/:file", (req, res) ->
-  file = path.join(srcPath, decodeURIComponent(req.params.file))
+app.handleFile "/cfg", (res, file, value) ->
   console.log "generating cfg for file", file
+  if value # write value to file (goblint needs some file as input)
+    fs.writeFileSync file, value
   cmd = "../../goblint --enable justcfg "+file+" && cat cfg.dot"
+  console.log cmd
   exec cmd, cwd: "./tmp", (error, stdout, stderr) ->
     # remove goblint's non-multithreaded program warning from cfg.dot
     stdout = stdout.replace(/NB[\s\S]*?(digraph)/, "$1")
