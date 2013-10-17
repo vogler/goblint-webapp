@@ -30,10 +30,14 @@ app.configure ->
 app.configure "development", -> # default, if NODE_ENV is not set
   app.use express.errorHandler()
 
-
 # configure paths
 srcPath = path.normalize(__dirname + if fs.existsSync "../tests" then "/.." else "/tmp") # goblint path (should be root of git repo), otherwise use tmp
 fs.mkdirSync "tmp" unless fs.existsSync "tmp/"
+
+
+# functions
+Array::partition = (p) ->
+  @.reduce (([a,b], c) -> if p(c) then [a.concat(c),b] else [a,b.concat(c)]), [[],[]]
 
 # routes
 app.get "/", (req, res) ->
@@ -43,10 +47,9 @@ app.get "/", (req, res) ->
 app.get "/partial/:name", (req, res) ->
   res.render req.params.name+".jade"
 
-Array::partition = (p) ->
-  @.reduce (([a,b], c) -> if p(c) then [a.concat(c),b] else [a,b.concat(c)]), [[],[]]
+# DirectoryCtrl
 splitPath = (x) ->
-  x = if x.substr(-1) == '/' then x.substr(0, x.length-1) else x
+  x = if x.substr(-1) == '/' then x.substr(0, x.length-1) else x # remove trailing slash
   x.split(path.sep)
 gitModified = (absPath, relPath, clb) ->
   exec "git status --porcelain", {cwd: absPath}, (error, stdout, stderr) ->
@@ -60,7 +63,6 @@ gitModified = (absPath, relPath, clb) ->
     xs = xs.filter (x) -> x.indexOf(relPath) == 0 # ignore files that are not in path
     xs = xs.map (x) -> x.substr(relPath.length+1, x.length) # remove path prefix
     clb(xs)
-
 app.get "/files/:path?", (req, res) ->
   absPath = if req.params.path then path.join(srcPath, decodeURIComponent(req.params.path)) else srcPath
   relPath = path.relative(srcPath, absPath)
@@ -76,6 +78,7 @@ app.get "/files/:path?", (req, res) ->
       files = files.map (x) -> {name: x, modified: modifiedFiles.indexOf(x) != -1}
       res.json path: splitPath(relPath), files: files
 
+# FileCtrl (editor)
 app.get "/file/:file", (req, res) ->
   file = path.join(srcPath, decodeURIComponent(req.params.file))
   if not fs.existsSync file
@@ -124,6 +127,7 @@ app.post "/revert/:file", (req, res) ->
     sys.print "stderr:", stderr
     res.send stdout
 
+# SourceCtrl
 app.get "/result/:file", (req, res) ->
   file = path.join(srcPath, decodeURIComponent(req.params.file))
   cmd = "../goblint --sets ana.activated[0][+] file --sets result none "+file
@@ -145,6 +149,27 @@ app.get "/run/:file", (req, res) ->
       exec "./"+path.basename(tmpPath), cwd: path.dirname(tmpPath), (error, stdout, stderr) ->
         res.send stdout
 
+app.get "/cfg/:file", (req, res) ->
+  file = path.join(srcPath, decodeURIComponent(req.params.file))
+  console.log "generating cfg for file", file
+  cmd = "../../goblint --enable justcfg "+file+" && cat cfg.dot"
+  exec cmd, cwd: "./tmp", (error, stdout, stderr) ->
+    # remove goblint's non-multithreaded program warning from cfg.dot
+    stdout = stdout.replace(/NB[\s\S]*?(digraph)/, "$1")
+    # escape quotes in labels, otherwise dot fails!
+    re = /label ?= ?"(.*?)"] ?;/g
+    escaped = stdout
+    while m = re.exec(stdout)
+      x = m[1]
+      x = x.replace(/\\/g, '\\\\')
+      x = x.replace(/"/g, '\\"')
+      escaped = escaped.replace(m[1], x)
+    dot = spawn "dot", ["-Tpng"]
+    dot.stdout.pipe res
+    dot.stdin.write escaped
+    dot.stdin.end()
+
+# SpecCtrl
 app.post "/spec/:type", (req, res) ->
   console.log "converting spec to type", req.params.type
   spec = spawn "../_build/src/mainspec.native", ["-"]
@@ -168,26 +193,6 @@ app.post "/spec/:type", (req, res) ->
     ps.resume()
   spec.stdin.write req.body.value
   spec.stdin.end()
-
-app.get "/cfg/:file", (req, res) ->
-  file = path.join(srcPath, decodeURIComponent(req.params.file))
-  console.log "generating cfg for file", file
-  cmd = "../../goblint --set justcfg true "+file+" && cat cfg.dot"
-  exec cmd, cwd: "./tmp", (error, stdout, stderr) ->
-    # remove goblint's non-multithreaded program warning from cfg.dot
-    stdout = stdout.replace(/NB[\s\S]*?(digraph)/, "$1")
-    # escape quotes in labels, otherwise dot fails!
-    re = /label ?= ?"(.*?)"] ?;/g
-    escaped = stdout
-    while m = re.exec(stdout)
-      x = m[1]
-      x = x.replace(/\\/g, '\\\\')
-      x = x.replace(/"/g, '\\"')
-      escaped = escaped.replace(m[1], x)
-    dot = spawn "dot", ["-Tpng"]
-    dot.stdout.pipe res
-    dot.stdin.write escaped
-    dot.stdin.end()
 
 
 # watch files and inform clients on changes
