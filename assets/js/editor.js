@@ -37,7 +37,7 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
     var routeChanged = function(){
       // console.log("editor", $scope.id, "$routeChangeSuccess");
       var file = $routeParams[$scope.id];
-      if(file && file != $scope.file){
+      if(file && file != $scope.file && basename(file) != "new"){
         $scope.load(file);
       }else{
         // $scope.new();
@@ -81,10 +81,11 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
   $scope.new = function(text){
     console.log("new", $scope.id);
     if(!text) text = "";
-    $scope.file = null;
     $scope.editor.setValue(text);
     $scope.editor.clearHistory();
     $scope.editor.markClean();
+    $location.path('/'+$scope.id+'/'+encodeURIComponent(dirname($scope.file) + "new"));
+    $scope.file = null;
     emit("new", {file: null});
   };
   $scope.save = function(){
@@ -128,6 +129,7 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
     if(!confirm("Delete the file?")) return;
     $http.delete('/file/'+encodeURIComponent($scope.file))
     .success(function(){
+      $scope.file = null;
       if(history.length > 1){
         history.back();
       }else{

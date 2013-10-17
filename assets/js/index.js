@@ -103,10 +103,14 @@ app.controller("DirectoryCtrl", function ($scope, $http, $location, $routeParams
 app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams) {
   $scope.compile_error = false;
 
+  var getOrPost = function(action){
+    var url = '/'+action;
+    if($scope.ref.file)
+      url += '/'+encodeURIComponent($scope.ref.file);
+    return !$scope.ref.editor.isClean() || !$scope.ref.file ? $http.post(url, {value: $scope.ref.editor.getValue()}) : $http.get(url);
+  };
   $scope.run = function(){  // extension to btn-toolbar
-    var url = '/run/'+encodeURIComponent($scope.ref.file);
-    var req = !$scope.ref.editor.isClean() || !$scope.ref.file ? $http.post(url, {value: $scope.ref.editor.getValue()}) : $http.get(url);
-    req.success(function(data){
+    getOrPost('run').success(function(data){
       console.log("compile and run", $scope.ref.file);
       $scope.output = data;
       $scope.compile_error = false;
@@ -117,31 +121,38 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams) {
     });
   };
   $scope.cfg = function(){
-    var url = "/cfg/"+encodeURIComponent($scope.ref.file);
+    var url = "/cfg/" + ($scope.ref.file ? encodeURIComponent($scope.ref.file) : "");
     if(!$scope.ref.editor.isClean() || !$scope.ref.file){
       postToNewWindow(url, {value: $scope.ref.editor.getValue()});
     }else{
       window.open(url);
     }
   };
+  $scope.analyze = _.debounce(function(){
+    $scope.ref.clearWarnings();
+    getOrPost('result').success(function(data){
+      $scope.output = data;
+      $scope.compile_error = false;
+      var xs = filterMap(data.split('\n'), function(x){
+        // MAYBE writing to unopened file handle fp [30m(/home/ralf/analyzer/tests/regression/18-file/03-if-close.c:9)[0;0;00m
+        var m = /(MAYBE )?(.*?) .{5}\(.*?:(.*?)\)/.exec(x);
+        if(m) return [parseInt(m[3]), m[2], m[1]=="MAYBE "];
+      });
+      xs.forEach(function(x){ $scope.ref.warnText.apply(this, x); });
+    })
+    .error(function(data){
+      $scope.output = data;
+      $scope.compile_error = true;
+    });
+  }, 200);
   $scope.handle = function(event, data){
     // console.log("handle", event, "for", $scope.ref.id);
     switch(event){
       case "files":
         $scope.loadFiles();
         break;
-      case "load":
-        $http.get('/result/'+encodeURIComponent(data.file))
-        .success(function(data){
-          $scope.output = data;
-          $scope.compile_error = false;
-          var xs = filterMap(data.split('\n'), function(x){
-            // MAYBE writing to unopened file handle fp [30m(/home/ralf/analyzer/tests/regression/18-file/03-if-close.c:9)[0;0;00m
-            var m = /(MAYBE )?(.*?) .{5}\(.*?:(.*?)\)/.exec(x);
-            if(m) return [parseInt(m[3]), m[2], m[1]=="MAYBE "];
-          });
-          xs.forEach(function(x){ $scope.ref.warnText.apply(this, x); });
-        });
+      case "change":
+        $scope.analyze();
         break;
     }
   };
