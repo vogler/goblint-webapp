@@ -36,8 +36,12 @@ app.config(function ($routeProvider, $locationProvider) {
     jq: {tooltip: {container: 'body'}} // placement: 'right'
   });
 
+app.factory("glob", function(){
+  return {shared: {ana: null}};
+});
 
-app.controller("DirectoryCtrl", function ($scope, $http, $location, $routeParams) {
+
+app.controller("DirectoryCtrl", function ($scope, $http, $location, $routeParams, glob) {
   $scope.cwd   = "";
   $scope.files = [];
 
@@ -86,6 +90,7 @@ app.controller("DirectoryCtrl", function ($scope, $http, $location, $routeParams
   // alternative would be to add a route with a controller and a templateUrl pointing to a dummy file
   $scope.$on('$routeChangeSuccess', function(ev){
     // console.log($routeParams);
+    glob.shared.spec = $routeParams.spec ? decodeURIComponent($routeParams.spec) : null;
     var file = $routeParams.source || $routeParams.spec;
     if(file && !$routeParams.files){
       $scope.$parent.title = basename(file);
@@ -100,17 +105,29 @@ app.controller("DirectoryCtrl", function ($scope, $http, $location, $routeParams
 });
 
 
-app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams) {
+app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, glob) {
   $scope.compile_error = false;
+  $scope.shared = glob.shared;
+  // goblint options
+  $scope.goblint = {compile: false,
+                    ana: "file",
+                    file: {optimistic: true},
+                    options: "--sets result none"};
+  $scope.$watch("goblint", function(){$scope.analyze()}, true); // rerun analyze on change
 
-  var getOrPost = function(action){
+  var isClean = function(){
+    return $scope.ref.editor.isClean() && $scope.ref.file;
+  };
+  var routeData = function(action){
     var url = '/'+action;
     if($scope.ref.file)
       url += '/'+encodeURIComponent($scope.ref.file);
-    return !$scope.ref.editor.isClean() || !$scope.ref.file ? $http.post(url, {value: $scope.ref.editor.getValue()}) : $http.get(url);
+    var data = isClean() ? {} : {value: $scope.ref.editor.getValue()};
+    return {url: url, data: data};
   };
   $scope.run = function(){  // extension to btn-toolbar
-    getOrPost('run').success(function(data){
+    var cfg = routeData('run');
+    $http.post(cfg.url, cfg.data).success(function(data){
       console.log("compile and run", $scope.ref.file);
       $scope.output = data;
       $scope.compile_error = false;
@@ -121,16 +138,31 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams) {
     });
   };
   $scope.cfg = function(){
-    var url = "/cfg/" + ($scope.ref.file ? encodeURIComponent($scope.ref.file) : "");
-    if(!$scope.ref.editor.isClean() || !$scope.ref.file){
-      postToNewWindow(url, {value: $scope.ref.editor.getValue()});
+    var cfg = routeData('cfg');
+    if(isClean()){
+      window.open(cfg.url);
     }else{
-      window.open(url);
+      postToNewWindow(cfg.url, cfg.data);
     }
   };
   $scope.analyze = _.debounce(function(){
     $scope.ref.clearWarnings();
-    getOrPost('result').success(function(data){
+    var cfg = routeData('result');
+    var o = $scope.goblint;
+    glob.shared.ana = o.ana;
+    cfg.data.compile = o.compile;
+    // construct goblint cmdline options
+    var x = [];
+    x.push("--sets ana.activated[0][+] "+o.ana);
+    if(o.ana == "file"){
+      x.push("--set ana.file.optimistic "+o.file.optimistic);
+    }
+    if(o.ana == "spec" && glob.shared.spec){
+      x.push("--sets ana.spec.file "+glob.shared.spec);
+    }
+    x = x.concat(o.options.trim().split(", "));
+    cfg.data.options = x;
+    $http.post(cfg.url, cfg.data).success(function(data){
       $scope.output = data;
       $scope.compile_error = false;
       var xs = filterMap(data.split('\n'), function(x){
@@ -159,7 +191,8 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams) {
 });
 
 
-app.controller("SpecCtrl", function ($scope, $http, $location, $routeParams) {
+app.controller("SpecCtrl", function ($scope, $http, $location, $routeParams, glob) {
+  $scope.shared = glob.shared;
   $scope.updateGraph = _.debounce(function(){
     console.log("update graph!");
     $http.post('/spec/dot', {value: $scope.ref.editor.getValue()})

@@ -33,7 +33,7 @@ app.configure "development", -> # default, if NODE_ENV is not set
 # configure paths
 srcPath = path.normalize(__dirname + if fs.existsSync "../tests" then "/.." else "/tmp") # goblint path (should be root of git repo), otherwise use tmp
 fs.mkdirSync "tmp" unless fs.existsSync "tmp/"
-
+src = (x, y) -> if x then path.join(srcPath, decodeURIComponent(x)) else y
 
 # functions
 Array::partition = (p) ->
@@ -64,7 +64,7 @@ gitModified = (absPath, relPath, clb) ->
     xs = xs.map (x) -> x.substr(relPath.length+1, x.length) # remove path prefix
     clb(xs)
 app.get "/files/:path?", (req, res) ->
-  absPath = if req.params.path then path.join(srcPath, decodeURIComponent(req.params.path)) else srcPath
+  absPath = src(req.params.path, srcPath)
   relPath = path.relative(srcPath, absPath)
   console.log "reading path", absPath, relPath
   fs.readdir absPath, (err, files) ->
@@ -80,7 +80,7 @@ app.get "/files/:path?", (req, res) ->
 
 # FileCtrl (editor)
 app.get "/file/:file", (req, res) ->
-  file = path.join(srcPath, decodeURIComponent(req.params.file))
+  file = src(req.params.file)
   if not fs.existsSync file
     console.log "file not found: ", file
     res.send 404
@@ -90,7 +90,7 @@ app.get "/file/:file", (req, res) ->
   res.sendfile file
 
 app.post "/file/:file", (req, res) ->
-  file = path.join(srcPath, decodeURIComponent(req.params.file))
+  file = src(req.params.file)
   if req.body.name
     newfile = path.join(path.dirname(file), req.body.name)
     console.log "renaming", file, "to", newfile
@@ -110,7 +110,7 @@ app.post "/file/:file", (req, res) ->
         res.send 200
 
 app.del "/file/:file", (req, res) ->
-  file = path.join(srcPath, decodeURIComponent(req.params.file))
+  file = src(req.params.file)
   console.log "deleting", file
   fs.unlink file, (err) ->
     if err
@@ -120,7 +120,7 @@ app.del "/file/:file", (req, res) ->
       res.send 200
 
 app.post "/revert/:file", (req, res) ->
-  file = path.join(srcPath, decodeURIComponent(req.params.file))
+  file = src(req.params.file)
   console.log "reverting", file
   cmd = "git reset HEAD "+file+"; git checkout -- "+file
   exec cmd, {cwd: srcPath}, (error, stdout, stderr) ->
@@ -128,16 +128,23 @@ app.post "/revert/:file", (req, res) ->
     res.send stdout
 
 # generic way to allow 'get action file' and 'post action file? value'
-app.handleFile = (route, writeFile, f) -> # f is (res, file, value?)
-  app.get route+"/:file", (req, res) -> # use if file's content should be used
-      f res, path.join(srcPath, decodeURIComponent(req.params.file))
+app.handleFile = (route, options, f) -> # f is (req, res, file)
+  # set default options
+  options.get ?= false
+  options.writeFile ?= true
+  if options.get
+    app.get route+"/:file", (req, res) -> # use if file's content should be used
+        f req, res, src(req.params.file)
   app.post route+"/:file?", (req, res) -> # use if there are unsaved changes (file is optional)
+    if not req.body.value # in case we need to post other stuff but do no need to write a temporary file
+      f req, res, src(req.params.file)
+      return
     # somehow goblint and clang have problem with files that don't end in .c
-    baseFile = if req.params.file then path.basename req.params.file else "tmp.c" # avoid 'undefined'
+    baseFile = if req.params.file then path.basename src(req.params.file) else "tmp.c" # avoid 'undefined'
     tmp.tmpName {template: "./tmp/"+baseFile+"-XXXXXX"+path.extname(baseFile)}, (err, tmpPath) ->
-      if req.body.value # write value to file
+      if req.body.value and options.writeFile # write value to file
         fs.writeFileSync tmpPath, req.body.value
-      f res, path.resolve(tmpPath), req.body.value
+      f req, res, path.resolve(tmpPath)
 
 # SourceCtrl
 compile = (res, file, success) ->
@@ -151,19 +158,28 @@ compile = (res, file, success) ->
       else
         success()
 
-app.handleFile "/result", true, (res, file, value) ->
-  compile res, file, () ->
-    cmd = "../goblint --sets ana.activated[0][+] file --sets result none "+file
-    exec cmd, (error, stdout, stderr) ->
-      sys.print "stderr:", stderr
-      res.send stdout
+app.handleFile "/result", {}, (req, res, file) ->
+  analyze = () ->
+    # console.log "goblint options:", req.body.options
+    cmd = "./goblint "+req.body.options.join(" ")+" "+file # --sets result none
+    console.log cmd
+    exec cmd, {cwd: srcPath}, (error, stdout, stderr) ->
+      if error
+        sys.print "stderr:", stderr
+        res.send 500, stderr
+      else
+        res.send stdout
+  if req.body.compile
+    compile res, file, analyze
+  else
+    analyze()
 
-app.handleFile "/run", true, (res, file, value) ->
+app.handleFile "/run", {}, (req, res, file) ->
   compile res, file, () ->
     exec "./"+path.basename(tmpPath), cwd: path.dirname(tmpPath), (error, stdout, stderr) ->
       res.send stdout
 
-app.handleFile "/cfg", true, (res, file, value) ->
+app.handleFile "/cfg", {get: true}, (req, res, file) ->
   console.log "generating cfg for file", file
   cmd = "../../goblint --enable justcfg "+file+" && cat cfg.dot"
   console.log cmd

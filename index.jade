@@ -37,9 +37,13 @@ html(ng-app="goblint")
     include ie.fail.html
     .container(ng-controller="DirectoryCtrl")
       .row
-        .col-md-12
+        .col-md-7
           ol.breadcrumb
             li(ng-repeat="x in breadcrumb()"): a(ng-href="#/{{breadcrumb($index)}}") {{x}}
+        .col-md-5
+          ul.nav.nav-tabs.nav-justified
+            li.active: a file
+            li: a spec
       .row
         .col-md-2
           #files.list-group
@@ -48,15 +52,30 @@ html(ng-app="goblint")
               .badge(ng-show="file.modified") M
         .col-md-5(ng-controller="SourceCtrl")
           editor#source(ref="ref")
-            a.btn.btn-default(title="compile and run", ui-jq="tooltip", ng-click="run()"): i.glyphicon.glyphicon-play
-            a.btn.btn-default(title="open CIL CFG",    ui-jq="tooltip", ng-click="cfg()"): i.glyphicon.glyphicon-picture
+            a.btn.btn-default(title="rerun analysis",  ui-jq="tooltip", ng-click="analyze()"): i.glyphicon.glyphicon-refresh
+            a.btn.btn-default(title="compile and run", ui-jq="tooltip", ng-click="run()"):     i.glyphicon.glyphicon-play
+            a.btn.btn-default(title="open CIL CFG",    ui-jq="tooltip", ng-click="cfg()"):     i.glyphicon.glyphicon-picture
           #result
             span(ng-show="compile_error").label.label-warning
               i.glyphicon.glyphicon-warning-sign.icon-white
-              |  compile error
-            br
-            textarea#output(ng-model="output")
-        .col-md-5(ng-controller="SpecCtrl")
+              |  {{goblint.compile && "compile" || "goblint"}} error
+            form.form-inline.well.well-sm
+              .form-group
+                select.form-control(ng-model="goblint.ana")
+                  option file
+                  option spec
+              |  
+              label.checkbox-inline
+                input(type="checkbox", ng-model="goblint.compile")
+                | use clang
+              label.checkbox-inline(ng-show="goblint.ana=='file'")
+                input(type="checkbox", ng-model="goblint.file.optimistic")
+                | optimistic
+              |  
+              .form-group
+                input.form-control(type="text", ng-model="goblint.options", placeholder="options...", title="--set foo true, --set bar false", ui-jq="tooltip")
+            textarea#output.form-control(ng-model="output")
+        .col-md-5(ng-controller="SpecCtrl", ng-show="shared.ana=='spec'")
           editor#spec(ref="ref")
             a.btn.btn-default(title="open graph as PNG", ui-jq="tooltip", ng-click="openImage()", ng-disabled="error_line"): i.glyphicon.glyphicon-picture
           span(ng-show="error_line").label.label-warning
