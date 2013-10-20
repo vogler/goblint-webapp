@@ -126,7 +126,7 @@ app.post "/revert/:file", (req, res) ->
   console.log "reverting", file
   cmd = "git reset HEAD "+file+"; git checkout -- "+file
   exec cmd, {cwd: srcPath}, (error, stdout, stderr) ->
-    sys.print "stderr:", stderr
+    sys.print "stderr:", stderr if error
     res.send stdout
 
 # generic way to allow 'get action file' and 'post action file? value'
@@ -172,13 +172,11 @@ compile = (req, res, file, success) ->
 
 app.handleFile "/result", {}, (req, res, file) ->
   analyze = () ->
-    # console.log "goblint options:", req.body.options
-    cmd = "./goblint "+req.body.options.join(" ")+" "+path.relative(srcPath, file) # --sets result none
+    cmd = "./goblint "+req.body.options.join(" ")+" "+path.relative(srcPath, file)
     console.log cmd
-    exec cmd, {cwd: srcPath}, (error, stdout, stderr) ->
+    exec cmd+" 2>&1", {cwd: srcPath}, (error, stdout, stderr) ->
       if error
-        sys.print "stderr:", stderr
-        res.send 500, stderr
+        res.send 500, stdout
       else
         res.send stdout
   writeSpec = () ->
@@ -195,13 +193,11 @@ app.handleFile "/result", {}, (req, res, file) ->
 
 app.handleFile "/run", {}, (req, res, file) ->
   compile req, res, file, (bin) ->
-    exec "./"+path.basename(bin), cwd: path.dirname(bin), (error, stdout, stderr) ->
+    exec "./"+path.basename(bin)+" 2>&1", cwd: path.dirname(bin), (error, stdout, stderr) ->
       res.send stdout
 
 app.post "/shell", (req, res) ->
   exec req.body.cmd, cwd: "./tmp", (error, stdout, stderr) ->
-    console.log "stderr", stderr if error
-    console.log "stdout", stdout
     if error
       res.send 500, stderr
     else
@@ -209,19 +205,17 @@ app.post "/shell", (req, res) ->
 
 app.handleFile "/cfg", {get: true}, (req, res, file) ->
   console.log "generating cfg for file", file
-  cmd = "../../goblint --enable justcfg "+file+" && cat cfg.dot"
+  cmd = "../../goblint --enable justcfg "+file+" &>/dev/null && cat cfg.dot"
   console.log cmd
   exec cmd, cwd: "./tmp", (error, stdout, stderr) ->
-    # remove goblint's non-multithreaded program warning from cfg.dot
-    stdout = stdout.replace(/NB[\s\S]*?(digraph)/, "$1")
     # escape quotes in labels, otherwise dot fails!
-    re = /label ?= ?"(.*?)"] ?;/g
-    escaped = stdout
-    while m = re.exec(stdout)
-      x = m[1]
-      x = x.replace(/\\/g, '\\\\')
-      x = x.replace(/"/g, '\\"')
-      escaped = escaped.replace(m[1], x)
+    escaped = stdout # fixed in goblint
+    # re = /label ?= ?"(.*?)"] ?;/g
+    # while m = re.exec(stdout)
+    #   x = m[1]
+    #   x = x.replace(/\\/g, '\\\\')
+    #   x = x.replace(/"/g, '\\"')
+    #   escaped = escaped.replace(m[1], x)
     dot = spawn "dot", ["-Tpng"]
     dot.stdout.pipe res
     dot.stdin.write escaped
