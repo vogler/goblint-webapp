@@ -37,11 +37,17 @@ app.config(function ($routeProvider, $locationProvider) {
   });
 
 app.factory("glob", function(){
-  return {shared: {ana: null}};
+  return {shared:
+    {ana: null,
+     spec: {file: null, editor: null,
+            isSaved: function(){ return this.file && this.editor.isClean(); }
+           },
+     analyze: function(){}
+    }};
 });
 
 
-app.controller("DirectoryCtrl", function ($scope, $http, $location, $routeParams, glob) {
+app.controller("DirectoryCtrl", function ($scope, $http, $location, $routeParams) {
   $scope.cwd   = "";
   $scope.files = [];
 
@@ -90,7 +96,6 @@ app.controller("DirectoryCtrl", function ($scope, $http, $location, $routeParams
   // alternative would be to add a route with a controller and a templateUrl pointing to a dummy file
   $scope.$on('$routeChangeSuccess', function(ev){
     // console.log($routeParams);
-    glob.shared.spec = $routeParams.spec ? decodeURIComponent($routeParams.spec) : null;
     var file = $routeParams.source || $routeParams.spec;
     if(file && !$routeParams.files){
       $scope.$parent.title = basename(file);
@@ -115,14 +120,14 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
                     options: "--sets result none"};
   $scope.$watch("goblint", function(){$scope.analyze()}, true); // rerun analyze on change
 
-  var isClean = function(){
-    return $scope.ref.editor.isClean() && $scope.ref.file;
+  var isSaved = function(){ // no unsaved content
+    return $scope.ref.file && $scope.ref.editor.isClean();
   };
   var routeData = function(action){
     var url = '/'+action;
     if($scope.ref.file)
       url += '/'+encodeURIComponent($scope.ref.file);
-    var data = isClean() ? {} : {value: $scope.ref.editor.getValue()};
+    var data = isSaved() ? {} : {content: $scope.ref.editor.getValue()};
     return {url: url, data: data};
   };
   $scope.run = function(){  // extension to btn-toolbar
@@ -139,13 +144,14 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
   };
   $scope.cfg = function(){
     var cfg = routeData('cfg');
-    if(isClean()){
+    if(isSaved()){
       window.open(cfg.url);
     }else{
       postToNewWindow(cfg.url, cfg.data);
     }
   };
   $scope.analyze = _.debounce(function(){
+    // console.log("analyze");
     $scope.ref.clearWarnings();
     var cfg = routeData('result');
     var o = $scope.goblint;
@@ -157,8 +163,12 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
     if(o.ana == "file"){
       x.push("--set ana.file.optimistic "+o.file.optimistic);
     }
-    if(o.ana == "spec" && glob.shared.spec){
-      x.push("--sets ana.spec.file "+glob.shared.spec);
+    if(o.ana == "spec"){
+      if(glob.shared.spec.isSaved()){
+        x.push("--sets ana.spec.file "+glob.shared.spec.file);
+      }else{
+        cfg.data.spec = {file: glob.shared.spec.file, content: glob.shared.spec.editor.getValue()}
+      }
     }
     x = x.concat(o.options.trim().split(", "));
     cfg.data.options = x;
@@ -177,6 +187,7 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
       $scope.compile_error = true;
     });
   }, 200);
+  glob.shared.analyze = $scope.analyze;
   $scope.handle = function(event, data){
     // console.log("handle", event, "for", $scope.ref.id);
     switch(event){
@@ -184,6 +195,7 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
         $scope.loadFiles();
         break;
       case "change":
+        // console.log("change");
         $scope.analyze();
         break;
     }
@@ -193,13 +205,15 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
 
 app.controller("SpecCtrl", function ($scope, $http, $location, $routeParams, glob) {
   $scope.shared = glob.shared;
+
   $scope.updateGraph = _.debounce(function(){
     console.log("update graph!");
-    $http.post('/spec/dot', {value: $scope.ref.editor.getValue()})
+    $http.post('/spec/dot', {content: $scope.ref.editor.getValue()})
     .success(function(data){
       $('#graph').html(Viz(data, "svg"));
       $scope.error_line = false;
       $scope.ref.clearWarnings();
+      glob.shared.analyze();
     })
     .error(function(data){
       console.log(data);
@@ -212,13 +226,20 @@ app.controller("SpecCtrl", function ($scope, $http, $location, $routeParams, glo
     });
   }, 200);
   $scope.openImage = function(){
-    postToNewWindow("/spec/png", {value: $scope.ref.editor.getValue()});
+    postToNewWindow("/spec/png", {content: $scope.ref.editor.getValue()});
   };
   $scope.handle = function(event, data){
     // console.log("handle", event, "for", $scope.ref.id);
     switch(event){
       case "files":
         $scope.loadFiles();
+        break;
+      case "init":
+        glob.shared.spec.editor = $scope.ref.editor;
+        break;
+      case "load":
+      case "new": // data.file is null then
+        glob.shared.spec.file = data.file;
         break;
       case "change":
         $scope.updateGraph();

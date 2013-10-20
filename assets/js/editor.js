@@ -51,6 +51,7 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
           ev.preventDefault(); // stopPropagation
       }
     });
+    emit("init");
   };
   $scope.load = function(file){
     if(file){
@@ -65,7 +66,7 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
       console.log("loaded", file);
       $scope.editor.setValue(data);
       $scope.editor.markClean();
-      $scope.onChange(); // initial change event too fast for angular...
+      // $scope.onChange(); // initial change event too fast for angular...
       emit("load", {file: file});
     })
     .error(function(){

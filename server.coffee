@@ -22,6 +22,8 @@ app.configure ->
   app.set "port", process.env.PORT or 3000
   app.set "views", __dirname + ""
   app.use express.compress()
+  app.use express.cookieParser()
+  app.use express.session({secret: '1234567890QWERTY'})
   app.use express.bodyParser() # needed for req.files
   app.use express.methodOverride() # hidden input _method for put/del
   app.use require('connect-assets')()
@@ -66,7 +68,7 @@ gitModified = (absPath, relPath, clb) ->
 app.get "/files/:path?", (req, res) ->
   absPath = src(req.params.path, srcPath)
   relPath = path.relative(srcPath, absPath)
-  console.log "reading path", absPath, relPath
+  console.log "files", relPath
   fs.readdir absPath, (err, files) ->
     if not files
       res.send 404
@@ -85,7 +87,7 @@ app.get "/file/:file", (req, res) ->
     console.log "file not found: ", file
     res.send 404
     return
-  console.log "reading", file
+  console.log "file", file
   # (fs.createReadStream file).pipe res # streams file
   res.sendfile file
 
@@ -136,15 +138,23 @@ app.handleFile = (route, options, f) -> # f is (req, res, file)
     app.get route+"/:file", (req, res) -> # use if file's content should be used
         f req, res, src(req.params.file)
   app.post route+"/:file?", (req, res) -> # use if there are unsaved changes (file is optional)
-    if not req.body.value # in case we need to post other stuff but do no need to write a temporary file
-      f req, res, src(req.params.file)
-      return
-    # somehow goblint and clang have problem with files that don't end in .c
-    baseFile = if req.params.file then path.basename src(req.params.file) else "tmp.c" # avoid 'undefined'
-    tmp.tmpName {template: "./tmp/"+baseFile+"-XXXXXX"+path.extname(baseFile)}, (err, tmpPath) ->
-      if req.body.value and options.writeFile # write value to file
-        fs.writeFileSync tmpPath, req.body.value
-      f req, res, path.resolve(tmpPath)
+    req.session.tmp ?= {} # init tmp hash in session
+    file = src(req.params.file)
+    fWrite = (file) ->
+      if options.writeFile # write value to file
+        fs.writeFileSync file, req.body.content
+      f req, res, path.resolve(file)
+    if not req.body.content? # file is clean -> no need to write a temporary file
+      f req, res, file
+    else if file of req.session.tmp # user already has a tmp name for that file (avoid creating a new file for every request)
+      # console.log "reusing tmp file", req.session.tmp[file]
+      fWrite req.session.tmp[file]
+    else # use a new tmp file
+      # somehow goblint and clang have problem with files that don't end in .c
+      baseFile = if file then path.basename file else "tmp.c" # avoid 'undefined'
+      tmp.tmpName {template: "./tmp/"+baseFile+"-XXXXXX"+path.extname baseFile}, (err, tmpPath) ->
+        req.session.tmp[file] = tmpPath # save in session for this user
+        fWrite tmpPath
 
 # SourceCtrl
 compile = (res, file, success) ->
@@ -156,7 +166,7 @@ compile = (res, file, success) ->
       if error
         res.send 500, stderr
       else
-        success()
+        success(tmpPath)
 
 app.handleFile "/result", {}, (req, res, file) ->
   analyze = () ->
@@ -169,14 +179,28 @@ app.handleFile "/result", {}, (req, res, file) ->
         res.send 500, stderr
       else
         res.send stdout
+  writeSpec = () ->
+    if not req.body.spec?.content?
+      analyze() # spec is already saved and given as option
+    else
+      req.session.tmp ?= {} # init tmp hash in session
+      spec = req.body.spec.file or "tmp.spec"
+      tmp.tmpName {template: "./tmp/"+path.basename spec+"-XXXXXX"+path.extname spec}, (err, tmpPath) ->
+        if spec of req.session.tmp
+          tmpPath = req.session.tmp[spec]
+        else
+          req.session.tmp[spec] = tmpPath # save in session for this user
+        fs.writeFileSync tmpPath, req.body.spec.content
+        req.body.options.push "--sets ana.spec.file "+path.resolve tmpPath
+        analyze()
   if req.body.compile
-    compile res, file, analyze
+    compile res, file, writeSpec
   else
-    analyze()
+    writeSpec()
 
 app.handleFile "/run", {}, (req, res, file) ->
-  compile res, file, () ->
-    exec "./"+path.basename(tmpPath), cwd: path.dirname(tmpPath), (error, stdout, stderr) ->
+  compile res, file, (bin) ->
+    exec "./"+path.basename(bin), cwd: path.dirname(bin), (error, stdout, stderr) ->
       res.send stdout
 
 app.handleFile "/cfg", {get: true}, (req, res, file) ->
@@ -201,7 +225,7 @@ app.handleFile "/cfg", {get: true}, (req, res, file) ->
 
 # SpecCtrl
 app.post "/spec/:type", (req, res) ->
-  console.log "converting spec to type", req.params.type
+  console.log "convert spec to type", req.params.type
   spec = spawn "../_build/src/mainspec.native", ["-"]
   ps = pause_stream().pause() # buffer output, otherwise can't change status since headers already sent
   if req.params.type == "dot"
@@ -221,15 +245,15 @@ app.post "/spec/:type", (req, res) ->
       res.status 500
     ps.pipe res
     ps.resume()
-  spec.stdin.write req.body.value
+  spec.stdin.write req.body.content
   spec.stdin.end()
 
 
 # watch files and inform clients on changes
 # TODO not recursive! -> use module that watches trees (e.g. mikeal/watch, paulmillr/chokidar, bevry/watchr) or handle each user with socket.io
-watcher = fs.watch srcPath, (event, filename) ->
-  console.log event: event, filename: filename
-  io.sockets.emit 'files'
+# watcher = fs.watch srcPath, (event, filename) ->
+#   console.log event: event, filename: filename
+#   io.sockets.emit 'files'
 
 # watch = require("watch") # too slow
 # watch.createMonitor srcPath, (monitor) ->
