@@ -115,21 +115,26 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
   $scope.shared = glob.shared;
   // goblint options
   $scope.goblint = {compile: false,
-                    ana: "file",
+                    ana: localStorage.ana || "file",
                     file: {optimistic: true},
                     options: "--sets result none"};
+  glob.shared.ana = $scope.goblint.ana;
   $scope.$watch("goblint", function(curr, prev){
-    if(prev.ana != curr.ana && curr.ana == "spec"){
-      // CodeMirror has a problem with being hidden (needs refresh before it shows anything)
-      // watch fires before ng-show makes editor visible. no events :(
-      var refreshEditor = function(){
-        if($("#spec").is(":visible")){
-          glob.shared.spec.editor.refresh();
-        }else{
-          _.delay(refreshEditor, 200);
-        }
-      };
-      refreshEditor();
+    if(prev==curr) return; // somehow the first time call of watch is wrong
+    if(prev.ana != curr.ana){
+      glob.shared.ana = localStorage.ana = curr.ana; // update shared var and localStorage
+      if(curr.ana == "spec"){
+        // CodeMirror has a problem with being hidden (needs refresh before it shows anything)
+        // watch fires before ng-show makes editor visible. no events :(
+        var refreshEditor = function(){
+          if($("#spec").is(":visible")){
+            glob.shared.spec.editor.refresh();
+          }else{
+            _.delay(refreshEditor, 200);
+          }
+        };
+        refreshEditor();
+      }
     }
     $scope.analyze();
   }, true); // rerun analyze on change
@@ -169,7 +174,6 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
     $scope.ref.clearWarnings();
     var cfg = routeData('result');
     var o = $scope.goblint;
-    glob.shared.ana = o.ana;
     cfg.data.compile = o.compile;
     // construct goblint cmdline options
     var x = [];
@@ -201,7 +205,7 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
       $scope.compile_error = true;
     });
   }, 200);
-  glob.shared.analyze = $scope.analyze;
+  glob.shared.analyze = _.after(2, $scope.analyze); // ignore first call from spec init (just loaded, no change)
   $scope.handle = function(event, data){
     // console.log("handle", event, "for", $scope.ref.id);
     switch(event){
