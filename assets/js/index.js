@@ -112,13 +112,15 @@ app.controller("DirectoryCtrl", function ($scope, $http, $location, $routeParams
 
 app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, glob) {
   $scope.compile_error = false;
-  $scope.shared = glob.shared;
+  $scope.cmd = "cat test.txt";
   // goblint options
   $scope.goblint = {compile: false,
                     ana: localStorage.ana || "file",
                     file: {optimistic: true},
                     options: "--sets result none"};
   glob.shared.ana = $scope.goblint.ana;
+  $scope.shared = glob.shared;
+
   $scope.$watch("goblint", function(curr, prev){
     if(prev==curr) return; // somehow the first time call of watch is wrong
     if(prev.ana != curr.ana){
@@ -150,6 +152,7 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
     return {url: url, data: data};
   };
   $scope.run = function(){  // extension to btn-toolbar
+    $scope.cmd_error = false;
     var cfg = routeData('run');
     $http.post(cfg.url, cfg.data).success(function(data){
       console.log("compile and run", $scope.ref.file);
@@ -159,6 +162,16 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
     .error(function(data){
       $scope.output = data;
       $scope.compile_error = true;
+    });
+  };
+  $scope.shell = function(){
+    $http.post("/shell", {cmd: $scope.cmd}).success(function(data){
+      $scope.output = data;
+      $scope.cmd_error = false;
+    })
+    .error(function(data){
+      $scope.output = data;
+      $scope.cmd_error = true;
     });
   };
   $scope.cfg = function(){
@@ -172,6 +185,7 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
   $scope.analyze = _.debounce(function(){
     console.log("analyze");
     $scope.ref.clearWarnings();
+    $scope.cmd_error = false;
     var cfg = routeData('result');
     var o = $scope.goblint;
     cfg.data.compile = o.compile;

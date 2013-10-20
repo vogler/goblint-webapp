@@ -198,6 +198,15 @@ app.handleFile "/run", {}, (req, res, file) ->
     exec "./"+path.basename(bin), cwd: path.dirname(bin), (error, stdout, stderr) ->
       res.send stdout
 
+app.post "/shell", (req, res) ->
+  exec req.body.cmd, cwd: "./tmp", (error, stdout, stderr) ->
+    console.log "stderr", stderr if error
+    console.log "stdout", stdout
+    if error
+      res.send 500, stderr
+    else
+      res.send stdout
+
 app.handleFile "/cfg", {get: true}, (req, res, file) ->
   console.log "generating cfg for file", file
   cmd = "../../goblint --enable justcfg "+file+" && cat cfg.dot"
