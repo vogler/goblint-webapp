@@ -71,7 +71,7 @@ html(ng-app="goblint")
               .form-group
                 input.form-control(type="text", ng-model="goblint.options", placeholder="options...", title="--set foo true, --set bar false", ui-jq="tooltip")
             textarea#output.form-control(ng-model="output")
-        .col-md-5(ng-controller="SpecCtrl")
+        .col-md-5(ng-controller="SpecCtrl", ng-show="shared.ana=='spec'")
           editor#spec(ref="ref")
             a.btn.btn-default(title="open graph as PNG", ui-jq="tooltip", ng-click="openImage()", ng-disabled="error_line"): i.glyphicon.glyphicon-picture
           span(ng-show="error_line").label.label-warning

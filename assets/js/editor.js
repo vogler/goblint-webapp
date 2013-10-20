@@ -22,11 +22,14 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
     $scope.$parent.handle(event, data);
   };
 
-  $scope.onChange = _.throttle(function(){
+  $scope.updateClean = function(){
     $scope.clean = $scope.editor.isClean();
     if(!$rootScope.$$phase) { // only one digest allowed at a time...
       $scope.$apply(); // needed since called from outside of angular
     }
+  };
+  $scope.onChange = _.throttle(function(){
+    $scope.updateClean();
     // console.log("editor onChange", $scope.id, $scope.clean);
     emit("change");
   }, 100);
@@ -47,6 +50,7 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
     routeChanged(); // needed since routeChangeSuccess occurs before directives are parsed
     $scope.$on('$locationChangeStart', function(ev){
       if(!$scope.editor.isClean()){
+        console.log(ev);
         if(!confirm("You have unsaved changes! Discard them?"))
           ev.preventDefault(); // stopPropagation
       }
@@ -65,8 +69,9 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
     .success(function(data){
       console.log("loaded", file);
       $scope.editor.setValue(data);
+      $scope.editor.clearHistory();
       $scope.editor.markClean();
-      // $scope.onChange(); // initial change event too fast for angular...
+      $scope.updateClean(); // initial change event too fast for angular...
       emit("load", {file: file});
     })
     .error(function(){
@@ -102,7 +107,7 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
     $http.post('/file/'+encFile, {value: $scope.editor.getValue()})
     .success(function(){
       $scope.editor.markClean();
-      $scope.onChange(); // initial change event too fast for angular...
+      $scope.updateClean(); // initial change event too fast for angular...
       console.log("saved file", file);
       if(isNew){
         $location.path('/'+$scope.id+'/'+encFile);

@@ -130,36 +130,38 @@ app.post "/revert/:file", (req, res) ->
     res.send stdout
 
 # generic way to allow 'get action file' and 'post action file? value'
-app.handleFile = (route, options, f) -> # f is (req, res, file)
+app.handleFile = (route, options, clb) -> # clb is (req, res, file)
   # set default options
   options.get ?= false
   options.writeFile ?= true
   if options.get
     app.get route+"/:file", (req, res) -> # use if file's content should be used
-        f req, res, src(req.params.file)
+        clb req, res, src(req.params.file)
   app.post route+"/:file?", (req, res) -> # use if there are unsaved changes (file is optional)
-    req.session.tmp ?= {} # init tmp hash in session
-    file = src(req.params.file)
-    fWrite = (file) ->
-      if options.writeFile # write value to file
-        fs.writeFileSync file, req.body.content
-      f req, res, path.resolve(file)
-    if not req.body.content? # file is clean -> no need to write a temporary file
-      f req, res, file
-    else if file of req.session.tmp # user already has a tmp name for that file (avoid creating a new file for every request)
-      # console.log "reusing tmp file", req.session.tmp[file]
-      fWrite req.session.tmp[file]
-    else # use a new tmp file
-      # somehow goblint and clang have problem with files that don't end in .c
-      baseFile = if file then path.basename file else "tmp.c" # avoid 'undefined'
-      tmp.tmpName {template: "./tmp/"+baseFile+"-XXXXXX"+path.extname baseFile}, (err, tmpPath) ->
-        req.session.tmp[file] = tmpPath # save in session for this user
-        fWrite tmpPath
+    # somehow goblint and clang have problem with files that don't end in .c
+    file = src(req.params.file, "tmp.c")
+    if req.body.content? 
+      content = if options.writeFile then req.body.content else null
+      tmpFile req, file, content, (tmpPath) ->
+        clb req, res, tmpPath
+    else # file is clean -> no need to write a temporary file
+      clb req, res, file
+
+tmpFile = (req, file, content, clb) -> # get tmpName from session or new one, write content to file if set
+  k = (file) -> # write content to file if there is any and continue
+    fs.writeFileSync file, content if content?
+    clb file
+  req.session.tmp ?= {} # init tmp hash in session
+  if file of req.session.tmp # user already has a tmp name for that file (avoid creating a new file for every request)
+    k path.resolve(req.session.tmp[file])
+  else # use a new tmp file
+    tmp.tmpName {template: "./tmp/"+path.basename file+"-XXXXXX"+path.extname file}, (err, tmpPath) ->
+      req.session.tmp[file] = tmpPath # update session
+      k path.resolve(tmpPath)
 
 # SourceCtrl
-compile = (res, file, success) ->
-  baseFile = path.basename file
-  tmp.tmpName {template: "./tmp/"+baseFile+"-XXXXXX"}, (err, tmpPath) ->
+compile = (req, res, file, success) ->
+  tmpFile req, file, null, (tmpPath) ->
     cmd = "clang "+file+" -o "+tmpPath
     console.log "compiling:", cmd
     exec cmd, (error, stdout, stderr) ->
@@ -171,7 +173,7 @@ compile = (res, file, success) ->
 app.handleFile "/result", {}, (req, res, file) ->
   analyze = () ->
     # console.log "goblint options:", req.body.options
-    cmd = "./goblint "+req.body.options.join(" ")+" "+file # --sets result none
+    cmd = "./goblint "+req.body.options.join(" ")+" "+path.relative(srcPath, file) # --sets result none
     console.log cmd
     exec cmd, {cwd: srcPath}, (error, stdout, stderr) ->
       if error
@@ -183,23 +185,16 @@ app.handleFile "/result", {}, (req, res, file) ->
     if not req.body.spec?.content?
       analyze() # spec is already saved and given as option
     else
-      req.session.tmp ?= {} # init tmp hash in session
-      spec = req.body.spec.file or "tmp.spec"
-      tmp.tmpName {template: "./tmp/"+path.basename spec+"-XXXXXX"+path.extname spec}, (err, tmpPath) ->
-        if spec of req.session.tmp
-          tmpPath = req.session.tmp[spec]
-        else
-          req.session.tmp[spec] = tmpPath # save in session for this user
-        fs.writeFileSync tmpPath, req.body.spec.content
-        req.body.options.push "--sets ana.spec.file "+path.resolve tmpPath
+      tmpFile req, req.body.spec.file or "tmp.spec", req.body.spec.content, (tmpPath) ->
+        req.body.options.push "--sets ana.spec.file "+path.relative(srcPath, tmpPath)
         analyze()
   if req.body.compile
-    compile res, file, writeSpec
+    compile req, res, file, writeSpec
   else
     writeSpec()
 
 app.handleFile "/run", {}, (req, res, file) ->
-  compile res, file, (bin) ->
+  compile req, res, file, (bin) ->
     exec "./"+path.basename(bin), cwd: path.dirname(bin), (error, stdout, stderr) ->
       res.send stdout
 

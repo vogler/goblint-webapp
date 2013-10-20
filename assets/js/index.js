@@ -118,7 +118,21 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
                     ana: "file",
                     file: {optimistic: true},
                     options: "--sets result none"};
-  $scope.$watch("goblint", function(){$scope.analyze()}, true); // rerun analyze on change
+  $scope.$watch("goblint", function(curr, prev){
+    if(prev.ana != curr.ana && curr.ana == "spec"){
+      // CodeMirror has a problem with being hidden (needs refresh before it shows anything)
+      // watch fires before ng-show makes editor visible. no events :(
+      var refreshEditor = function(){
+        if($("#spec").is(":visible")){
+          glob.shared.spec.editor.refresh();
+        }else{
+          _.delay(refreshEditor, 200);
+        }
+      };
+      refreshEditor();
+    }
+    $scope.analyze();
+  }, true); // rerun analyze on change
 
   var isSaved = function(){ // no unsaved content
     return $scope.ref.file && $scope.ref.editor.isClean();
@@ -151,7 +165,7 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
     }
   };
   $scope.analyze = _.debounce(function(){
-    // console.log("analyze");
+    console.log("analyze");
     $scope.ref.clearWarnings();
     var cfg = routeData('result');
     var o = $scope.goblint;
@@ -167,7 +181,7 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
       if(glob.shared.spec.isSaved()){
         x.push("--sets ana.spec.file "+glob.shared.spec.file);
       }else{
-        cfg.data.spec = {file: glob.shared.spec.file, content: glob.shared.spec.editor.getValue()}
+        cfg.data.spec = {file: glob.shared.spec.file, content: glob.shared.spec.editor.getValue()};
       }
     }
     x = x.concat(o.options.trim().split(", "));
