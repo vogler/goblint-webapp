@@ -50,7 +50,8 @@ html(ng-app="goblint")
           editor#source(ref="ref")
             a.btn.btn-default(title="rerun analysis",  ui-jq="tooltip", ng-click="analyze()"): i.glyphicon.glyphicon-refresh
             a.btn.btn-default(title="compile and run", ui-jq="tooltip", ng-click="run()"):     i.glyphicon.glyphicon-play
-            a.btn.btn-default(title="open CIL CFG",    ui-jq="tooltip", ng-click="cfg()"):     i.glyphicon.glyphicon-picture
+            a.btn.btn-default(title="open CIL CFG",    ui-jq="tooltip", ng-click="cfg()",  ng-disabled="compile_error"): i.glyphicon.glyphicon-picture
+            a.btn.btn-default(title="open HTML result",ui-jq="tooltip", ng-click="html()", ng-disabled="compile_error"): i.glyphicon.glyphicon-link
           #result
             span(ng-show="compile_error").label.label-warning
               i.glyphicon.glyphicon-warning-sign.icon-white

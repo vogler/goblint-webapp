@@ -182,7 +182,14 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
       postToNewWindow(cfg.url, cfg.data);
     }
   };
-  $scope.analyze = _.debounce(function(){
+  $scope.html = function(){
+    $scope.extra_options = ["--sets result html"];
+    $scope.analyze(function(success){
+      if(success) open("/html/"+basename($scope.ref.file)+".html");
+      $scope.extra_options = [];
+    });
+  };
+  $scope.analyze = _.debounce(function(clb){
     console.log("analyze");
     $scope.ref.clearWarnings();
     $scope.cmd_error = false;
@@ -202,7 +209,7 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
         cfg.data.spec = {file: glob.shared.spec.file, content: glob.shared.spec.editor.getValue()};
       }
     }
-    x = x.concat(o.options.trim().split(", "));
+    x = x.concat(o.options.trim().split(", ")).concat($scope.extra_options);
     cfg.data.options = x;
     $http.post(cfg.url, cfg.data).success(function(data){
       $scope.output = data;
@@ -213,10 +220,12 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
         if(m) return [parseInt(m[3]), m[2], m[1]=="MAYBE "];
       });
       xs.forEach(function(x){ $scope.ref.warnText.apply(this, x); });
+      if(clb) clb(true);
     })
     .error(function(data){
       $scope.output = data;
       $scope.compile_error = true;
+      if(clb) clb(false);
     });
   }, 200);
   glob.shared.analyze = _.after(2, $scope.analyze); // ignore first call from spec init (just loaded, no change)

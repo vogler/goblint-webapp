@@ -16,6 +16,11 @@ server = require("http").createServer(app)
 io = require("socket.io").listen(server)
 io.set 'log level', 1
 
+# configure paths
+srcPath = path.normalize(__dirname + if fs.existsSync "../tests" then "/.." else "/tmp") # goblint path (should be root of git repo), otherwise use tmp
+fs.mkdirSync "tmp" unless fs.existsSync "tmp/"
+src = (x, y) -> if x then path.join(srcPath, decodeURIComponent(x)) else y
+
 # configure express
 app.configure ->
   # app.use(express.logger());
@@ -28,14 +33,10 @@ app.configure ->
   app.use express.methodOverride() # hidden input _method for put/del
   app.use require('connect-assets')()
   app.use express.static(__dirname + "/public")
+  app.use "/html", express.static(srcPath + "/result")
 
 app.configure "development", -> # default, if NODE_ENV is not set
   app.use express.errorHandler()
-
-# configure paths
-srcPath = path.normalize(__dirname + if fs.existsSync "../tests" then "/.." else "/tmp") # goblint path (should be root of git repo), otherwise use tmp
-fs.mkdirSync "tmp" unless fs.existsSync "tmp/"
-src = (x, y) -> if x then path.join(srcPath, decodeURIComponent(x)) else y
 
 # functions
 Array::partition = (p) ->
