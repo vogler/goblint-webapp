@@ -183,9 +183,11 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
     }
   };
   $scope.html = function(){
+    var w = open(); // open window after onclick is fine - open in callback lets browser treat it as popup...
     $scope.extra_options = ["--sets result html"];
     $scope.analyze(function(success){
-      if(success) open("/html/"+basename($scope.ref.file)+".html");
+      if(success) w.location.href = "/html/"+basename($scope.ref.file)+".html";
+      else w.close();
       $scope.extra_options = [];
     });
   };
