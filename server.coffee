@@ -19,6 +19,12 @@ io.set 'log level', 1
 # configure paths
 srcPath = path.normalize(__dirname + if fs.existsSync "../tests" then "/.." else "/tmp") # goblint path (should be root of git repo), otherwise use tmp
 fs.mkdirSync "tmp" unless fs.existsSync "tmp/"
+specBin = path.join(srcPath, "_build/src/mainspec.native")
+if not fs.existsSync specBin
+  return console.error "init failed: spec binary not found in", specBin
+goblintBin = path.join(srcPath, "goblint")
+if not fs.existsSync goblintBin
+  return console.error "init failed: goblint binary not found in", goblintBin
 src = (x, y) -> if x then path.join(srcPath, decodeURIComponent(x)) else y
 
 # configure express
@@ -173,7 +179,7 @@ compile = (req, res, file, success) ->
 
 app.handleFile "/result", {}, (req, res, file) ->
   analyze = () ->
-    cmd = "./goblint "+req.body.options.join(" ")+" "+path.relative(srcPath, file)
+    cmd = goblintBin+" "+req.body.options.join(" ")+" "+path.relative(srcPath, file)
     console.log cmd
     exec cmd+" 2>&1", {cwd: srcPath}, (error, stdout, stderr) ->
       if error
@@ -206,7 +212,7 @@ app.post "/shell", (req, res) ->
 
 app.handleFile "/cfg", {get: true}, (req, res, file) ->
   console.log "generating cfg for file", file
-  cmd = "../../goblint --enable justcfg "+file+" &>/dev/null && cat cfg.dot"
+  cmd = goblintBin+" --enable justcfg "+file+" &>/dev/null && cat cfg.dot"
   console.log cmd
   exec cmd, cwd: "./tmp", (error, stdout, stderr) ->
     # escape quotes in labels, otherwise dot fails!
@@ -225,7 +231,7 @@ app.handleFile "/cfg", {get: true}, (req, res, file) ->
 # SpecCtrl
 app.post "/spec/:type", (req, res) ->
   console.log "convert spec to type", req.params.type
-  spec = spawn "../_build/src/mainspec.native", ["-"]
+  spec = spawn specBin, ["-"]
   ps = pause_stream().pause() # buffer output, otherwise can't change status since headers already sent
   if req.params.type == "dot"
     spec.stdout.pipe ps
