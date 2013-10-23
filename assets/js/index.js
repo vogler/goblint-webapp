@@ -28,7 +28,7 @@ app.config(function ($routeProvider, $locationProvider) {
       .when('/spec/:spec', {})
       .when('/source/:source/spec/:spec', {}) // no optional routes :(
       .otherwise({
-        redirectTo: '/source/' + encodeURIComponent('tests/regression/18-file/01-ok.c') + '/spec/' + encodeURIComponent('src/spec/file.spec')
+        redirectTo: '/source/' + encodeURIComponent('tests/regression/18-file/01-ok.c') + '/spec/' + encodeURIComponent('tests/regression/18-file/file.optimistic.spec')
       });
       //- $locationProvider.html5Mode(true); // html5 pushState
   })
