@@ -217,8 +217,8 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
       $scope.output = data;
       $scope.compile_error = false;
       var xs = filterMap(data.split('\n'), function(x){
-        // MAYBE writing to unopened file handle fp [30m(/home/ralf/analyzer/tests/regression/18-file/03-if-close.c:9)[0;0;00m
-        var m = /(MAYBE )?(.*?) .{5}\(.*?:(.*?)\)/.exec(x);
+        // MAYBE writing to unopened file handle fp (/home/ralf/analyzer/tests/regression/18-file/03-if-close.c:9)
+        var m = /(MAYBE )?(.*?) \(.*?:(.*?)\)/.exec(x);
         if(m) return [parseInt(m[3]), m[2], m[1]=="MAYBE "];
       });
       xs.forEach(function(x){ $scope.ref.warnText.apply(this, x); });

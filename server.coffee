@@ -147,7 +147,7 @@ app.handleFile = (route, options, clb) -> # clb is (req, res, file)
   app.post route+"/:file?", (req, res) -> # use if there are unsaved changes (file is optional)
     # somehow goblint and clang have problem with files that don't end in .c
     file = src(req.params.file, "tmp.c")
-    if req.body.content? 
+    if req.body.content?
       content = if options.writeFile then req.body.content else null
       tmpFile req, file, content, (tmpPath) ->
         clb req, res, tmpPath
