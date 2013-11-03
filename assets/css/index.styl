@@ -18,16 +18,20 @@
   -webkit-transform: scaleX(-1);
   -ms-transform: scaleX(-1);
 
-nav_offset = 50px
-body
-  padding-top nav_offset
+md2w = 16.666666666666664% // width of col-md-2
+#path
+  position fixed
+  width md2w
+  top 0
+  left 0
+  right 0
 #files
   position fixed
-  width 16.666666666666664% // same as col-md-2
-  top nav_offset
+  width  md2w
+  top 40px
+  left 0
   bottom 0
   margin-bottom 0
-  left 0
   overflow-y auto
 #output
   height 200px

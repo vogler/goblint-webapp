@@ -293,5 +293,5 @@ app.controller("SpecCtrl", function ($scope, $http, $location, $routeParams, glo
 
 // scroll away file list horizontally but keep it fixed vertically
 $(window).scroll(function(){
-  $('#files').css('left',-$(window).scrollLeft());
+  $('#path, #files').css('left',-$(window).scrollLeft());
 });

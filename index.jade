@@ -36,11 +36,10 @@ html(ng-app="goblint")
   body
     include ie.fail.html
     .container(ng-controller="DirectoryCtrl")
-      nav.navbar.navbar-fixed-top
-        ol.breadcrumb
-          li(ng-repeat="x in breadcrumb()"): a(ng-href="#/{{breadcrumb($index)}}") {{x}}
       .row
         .col-md-2
+          ol#path.breadcrumb
+            li(ng-repeat="x in breadcrumb()"): a(ng-href="#/{{breadcrumb($index)}}") {{x}}
           #files.list-group
             a.list-group-item(ng-repeat="file in files", ng-class="{active: isLoaded(file.name)}", ng-href="#/{{makeLink(file.name)}}")
               {{file.name}}
