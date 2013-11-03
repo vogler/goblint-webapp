@@ -36,10 +36,9 @@ html(ng-app="goblint")
   body
     include ie.fail.html
     .container(ng-controller="DirectoryCtrl")
-      .row
-        .col-md-12
-          ol.breadcrumb
-            li(ng-repeat="x in breadcrumb()"): a(ng-href="#/{{breadcrumb($index)}}") {{x}}
+      nav.navbar.navbar-fixed-top
+        ol.breadcrumb
+          li(ng-repeat="x in breadcrumb()"): a(ng-href="#/{{breadcrumb($index)}}") {{x}}
       .row
         .col-md-2
           #files.list-group
