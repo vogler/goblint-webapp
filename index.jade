@@ -8,6 +8,7 @@ html(ng-app="goblint")
     link(href="components/codemirror/addon/display/fullscreen.css", rel="stylesheet")
     != css('index')
     script(src="components/jquery/jquery.min.js")
+    script(src="components/jquery.slimscroll/jquery.slimscroll.min.js")
     script(src="components/underscore/underscore-min.js")
     script(src="components/bootstrap/dist/js/bootstrap.min.js")
     script(src="components/angular/angular.min.js")
@@ -40,10 +41,11 @@ html(ng-app="goblint")
         .col-md-2
           ol#path.breadcrumb
             li(ng-repeat="x in breadcrumb()"): a(ng-href="#/{{breadcrumb($index)}}") {{x}}
-          #files.list-group
-            a.list-group-item(ng-repeat="file in files", ng-class="{active: isLoaded(file.name)}", ng-href="#/{{makeLink(file.name)}}")
-              {{file.name}}
-              .badge(ng-show="file.modified") M
+          #files
+            .list-group
+              a.list-group-item(ng-repeat="file in files", ng-class="{active: isLoaded(file.name)}", ng-href="#/{{makeLink(file.name)}}")
+                {{file.name}}
+                .badge(ng-show="file.modified") M
         .col-md-5(ng-controller="SourceCtrl")
           editor#source(ref="ref")
             a.btn.btn-default(title="rerun analysis",  ui-jq="tooltip", ng-click="analyze()"): i.glyphicon.glyphicon-refresh

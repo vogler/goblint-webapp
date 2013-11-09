@@ -295,3 +295,19 @@ app.controller("SpecCtrl", function ($scope, $http, $location, $routeParams, glo
 $(window).scroll(function(){
   $('#path, #files').css('left',-$(window).scrollLeft());
 });
+
+// update scrollbars on resize (also needed when horizontal scrollbars toggle)
+var adjustSlimscroll = function(){
+  $('#files .slimScrollDiv, #files .list-group').height($(window).height()-parseInt($('#files').css('top')));
+};
+$(window).resize(adjustSlimscroll);
+
+// once DOM is loaded
+$(function(){
+  // jquery.slimscroll for file list
+  $('#files > div').slimscroll({
+    height: 'auto'
+    // position: 'left',
+    // alwaysVisible: true
+  });
+});
