@@ -51,8 +51,8 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
     $scope.$on('$locationChangeStart', function(ev){
       if(!$scope.editor.isClean()){
         console.log(ev);
-        if(!confirm("You have unsaved changes! Discard them?"))
-          ev.preventDefault(); // stopPropagation
+        // if(!confirm("You have unsaved changes! Discard them?"))
+        //   ev.preventDefault(); // stopPropagation
       }
     });
     emit("init");
@@ -76,11 +76,12 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
     })
     .error(function(){
       alert("The file "+file+" doesn't exist! Redirecting...");
-      if(history.length > 1){
-        history.back();
-      }else{
-        $location.path("/");
-      }
+      // if(history.length > 1){
+      //   history.back();
+      // }else{
+      //   $location.path("/");
+      // }
+      $location.path("/");
       emit("loadError", {file: file});
     });
   };
