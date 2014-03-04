@@ -75,13 +75,13 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
       emit("load", {file: file});
     })
     .error(function(){
-      alert("The file "+file+" doesn't exist! Redirecting...");
+      alert("The file "+file+" doesn't exist!");
       // if(history.length > 1){
       //   history.back();
       // }else{
       //   $location.path("/");
       // }
-      $location.path("/");
+      // $location.path("/");
       emit("loadError", {file: file});
     });
   };

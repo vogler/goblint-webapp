@@ -78,12 +78,12 @@ app.controller("DirectoryCtrl", function ($scope, $http, $location, $routeParams
     })
     .error(function(){
       console.log('could not load directory');
-      alert("The directory doesn't exist! Redirecting...");
-      if(history.length > 1){
-        history.back();
-      }else{
-        $location.path("/");
-      }
+      alert("The directory "+path+" doesn't exist!");
+      // if(history.length > 1){
+      //   history.back();
+      // }else{
+      //   $location.path("/");
+      // }
     });
   };
 
