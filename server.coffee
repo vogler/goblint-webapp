@@ -17,14 +17,19 @@ io = require("socket.io").listen(server)
 io.set 'log level', 1
 
 # configure paths
-srcPath = path.normalize(__dirname + if fs.existsSync "../tests" then "/.." else "/tmp") # goblint path (should be root of git repo), otherwise use tmp
+isGitSub = fs.existsSync "../tests" # running locally as a git submodule of goblint, alternative is online, e.g. on heroku
+srcPath = path.normalize(__dirname + if isGitSub then "/.." else "/tmp") # goblint path (should be root of git repo), otherwise use tmp
+binPath = path.normalize(__dirname + "/bin")
 fs.mkdirSync "tmp" unless fs.existsSync "tmp/"
 specBin = path.join(srcPath, "_build/src/mainspec.native")
 if not fs.existsSync specBin
-  return console.error "init failed: spec binary not found in", specBin
+  if isGitSub then console.error "spec binary not found in", specBin
+  specBin = path.join(binPath, "spec")
 goblintBin = path.join(srcPath, "goblint")
 if not fs.existsSync goblintBin
-  return console.error "init failed: goblint binary not found in", goblintBin
+  if isGitSub then console.error "goblint binary not found in", goblintBin
+  goblintBin = path.join(binPath, "goblint")
+console.log "using binaries", specBin, "and", goblintBin
 src = (x, y) -> if x then path.join(srcPath, decodeURIComponent(x)) else y
 
 # configure express
