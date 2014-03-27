@@ -19,10 +19,10 @@ __Client:__
 # Installation
 In order to setup the web frontend (needs [node](http://nodejs.org/)'s npm; uses [bower](http://bower.io/)) do
 
-    sudo npm install -g coffee-script nodemon bower     # install those globally if not already installed (nodemon and bower are optional)
+    sudo npm install -g coffee-script nodemon bower     # optional: install dev-tools globally
     npm install
 
-Then run it using `coffee server.coffee` or `nodemon server.coffee` for automatic reloading during development.
+Then run it using `npm start` or `nodemon server.coffee` for automatic reloading during development.
 
 A JS version can be compiled using:
 
