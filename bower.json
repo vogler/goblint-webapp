@@ -2,7 +2,7 @@
   "name": "goblint-webapp",
   "version": "0.0.1",
   "dependencies": {
-    "json3": "git://github.com/bestiejs/json3.git#~3.2.4",
+    "json3": "git://github.com/bestiejs/json3.git#~3.3.2",
     "es5-shim": "git://github.com/kriskowal/es5-shim#~2.0.8",
     "jquery": "~2.0.3",
     "underscore": "~1.5.2",
@@ -11,8 +11,8 @@
     "angular-route": "~1.2.0-rc.2",
     "angular-resource": "~1.2.0",
     "angular-ui": "git://github.com/angular-ui/angular-ui.git#~0.4.0",
-    "codemirror": "git://github.com/marijnh/CodeMirror.git",
     "socket.io-client": "~0.9.11",
-    "jquery.slimscroll": "~1.3.1"
+    "jquery.slimscroll": "~1.3.1",
+    "codemirror": "^5.40.2"
   }
 }

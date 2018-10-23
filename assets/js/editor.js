@@ -65,6 +65,7 @@ app.controller("FileCtrl", function ($scope, $rootScope, $http, $location, $rout
     }else{
       return;
     }
+    console.log("loading", file);
     $http.get('/file/'+encodeURIComponent(file))
     .success(function(data){
       console.log("loaded", file);

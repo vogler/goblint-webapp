@@ -77,7 +77,7 @@ app.controller("DirectoryCtrl", function ($scope, $http, $location, $routeParams
       $scope.files = data.files;
     })
     .error(function(){
-      console.log('could not load directory');
+      console.log('could not load directory', path);
       alert("The directory "+path+" doesn't exist!");
       // if(history.length > 1){
       //   history.back();
@@ -96,7 +96,7 @@ app.controller("DirectoryCtrl", function ($scope, $http, $location, $routeParams
   // alternative would be to add a route with a controller and a templateUrl pointing to a dummy file
   $scope.$on('$routeChangeSuccess', function(ev){
     // console.log($routeParams);
-    var file = $routeParams.source || $routeParams.spec;
+    var file = decodeURIComponent($routeParams.source || $routeParams.spec);
     if(file && !$routeParams.files){
       $scope.$parent.title = basename(file);
       $scope.loadFiles(dirname(file));
@@ -200,13 +200,13 @@ app.controller("SourceCtrl", function ($scope, $http, $location, $routeParams, g
     cfg.data.compile = o.compile;
     // construct goblint cmdline options
     var x = [];
-    x.push("--sets ana.activated[0][+] "+o.ana);
+    x.push("--sets ana.activated[+] "+o.ana);
     if(o.ana == "file"){
       x.push("--set ana.file.optimistic "+o.file.optimistic);
     }
     if(o.ana == "spec"){
       if(glob.shared.spec.isSaved()){
-        x.push("--sets ana.spec.file "+glob.shared.spec.file);
+        x.push("--sets ana.spec.file "+decodeURIComponent(glob.shared.spec.file));
       }else{
         cfg.data.spec = {file: glob.shared.spec.file, content: glob.shared.spec.editor.getValue()};
       }
