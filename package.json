@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "body-parser": "^1.18.3",
-    "bower": "^1.8.4",
+    "bower": "^1.8.8",
     "coffeescript": "^2.3.2",
     "compression": "^1.7.3",
     "connect-assets": "~5.4.0",
