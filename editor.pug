@@ -1,8 +1,7 @@
 .panel.panel-default
   .panel-heading
     i.glyphicon(ng-class="{'glyphicon-check': clean, 'glyphicon-edit': !clean}")
-    |  
-    {{file || "New file"}}
+    | {{ file || "New file" }}
   .panel-body
     .btn-toolbar
       .btn-group
@@ -17,5 +16,5 @@
       .btn-group.form-inline.pull-right
         label(for="theme") Theme:
         select(ng-model="theme", ng-change="selectTheme()")
-          include editor-themes.jade
+          include editor-themes.pug
     textarea(id="{{id}}Text", placeholder="Write new code here or select a file")

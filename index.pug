@@ -1,4 +1,4 @@
-doctype 5
+doctype html
 html(ng-app="goblint")
   head
     title(ng-bind-template="{{title}} - goblint")
@@ -43,8 +43,7 @@ html(ng-app="goblint")
             li(ng-repeat="x in breadcrumb()"): a(ng-href="#/{{breadcrumb($index)}}") {{x}}
           #files
             .list-group
-              a.list-group-item(ng-repeat="file in files", ng-class="{active: isLoaded(file.name)}", ng-href="#/{{makeLink(file.name)}}")
-                {{file.name}}
+              a.list-group-item(ng-repeat="file in files", ng-class="{active: isLoaded(file.name)}", ng-href="#/{{makeLink(file.name)}}") {{ file.name }}
                 .badge(ng-show="file.modified") M
         .col-md-5(ng-controller="SourceCtrl")
           editor#source(ref="ref")

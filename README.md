@@ -4,7 +4,7 @@ Web frontend submodule for [Goblint](https://github.com/vogler/analyzer).
 __Server:__
 [node.js](http://nodejs.org/),
 [express](http://expressjs.com/),
-[jade](http://jade-lang.com/),
+[pug](https://pugjs.org/),
 [stylus](http://learnboost.github.com/stylus/),
 [connect-assets](https://github.com/adunkman/connect-assets),
 [CoffeeScript](http://coffeescript.org/)

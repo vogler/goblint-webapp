@@ -4,7 +4,7 @@ fs = require("fs")
 # eyes = require("eyes")
 # xml2js = require("xml2js")
 # xmlParser = new xml2js.Parser()
-sys = require("sys")
+util = require("util")
 exec = require("child_process").exec
 spawn = require("child_process").spawn
 tmp = require("tmp")
@@ -14,7 +14,6 @@ app = express()
 # socket.io
 server = require("http").createServer(app)
 io = require("socket.io").listen(server)
-io.set 'log level', 1
 
 # configure paths
 isGitSub = fs.existsSync "../tests" # running locally as a git submodule of goblint, alternative is online, e.g. on heroku
@@ -33,21 +32,18 @@ console.log "using binaries", specBin, "and", goblintBin
 src = (x, y) -> if x then path.join(srcPath, decodeURIComponent(x)) else y
 
 # configure express
-app.configure ->
-  # app.use(express.logger());
-  app.set "port", process.env.PORT or 3000
-  app.set "views", __dirname + ""
-  app.use express.compress()
-  app.use express.cookieParser()
-  app.use express.session({secret: '1234567890QWERTY'})
-  app.use express.bodyParser() # needed for req.files
-  app.use express.methodOverride() # hidden input _method for put/del
-  app.use require('connect-assets')()
-  app.use express.static(__dirname + "/public")
-  app.use "/html", express.static(srcPath + "/result")
+app.set "port", process.env.PORT or 3000
+app.set "views", __dirname + ""
+app.use require('compression')()
+app.use require('express-session')({secret: '1234567890QWERTY', resave: false, saveUninitialized: true})
+app.use require('body-parser')() # needed for req.files
+app.use require('method-override')() # hidden input _method for put/del
+app.use require('connect-assets')()
+app.use express.static(__dirname + "/public")
+app.use "/html", express.static(srcPath + "/result")
 
-app.configure "development", -> # default, if NODE_ENV is not set
-  app.use express.errorHandler()
+# app.configure "development", -> # default, if NODE_ENV is not set
+  # app.use express.errorHandler()
 
 # functions
 Array::partition = (p) ->
@@ -55,11 +51,11 @@ Array::partition = (p) ->
 
 # routes
 app.get "/", (req, res) ->
-  res.render "index.jade",
+  res.render "index.pug",
     node_env: process.env.NODE_ENV ? "development"
 
 app.get "/partial/:name", (req, res) ->
-  res.render req.params.name+".jade"
+  res.render req.params.name+".pug"
 
 # DirectoryCtrl
 splitPath = (x) ->
@@ -83,7 +79,7 @@ app.get "/files/:path?", (req, res) ->
   console.log "files", relPath
   fs.readdir absPath, (err, files) ->
     if not files
-      res.send 404
+      res.sendStatus 404
       return
     [a,b] = files.partition (x) -> fs.statSync(path.join(absPath, x)).isDirectory()
     files = (a.map (x) -> x+'/').concat b
@@ -97,11 +93,11 @@ app.get "/file/:file", (req, res) ->
   file = src(req.params.file)
   if not fs.existsSync file
     console.log "file not found: ", file
-    res.send 404
+    res.sendStatus 404
     return
   console.log "file", file
   # (fs.createReadStream file).pipe res # streams file
-  res.sendfile file
+  res.sendFile file
 
 app.post "/file/:file", (req, res) ->
   file = src(req.params.file)
@@ -111,34 +107,34 @@ app.post "/file/:file", (req, res) ->
     fs.rename file, newfile, (err) ->
       if err
         console.log "error renaming file:", err
-        res.send 500
+        res.sendStatus 500
       else
-        res.send 200
+        res.sendStatus 200
   if req.body.value
     console.log "saving", file
     fs.writeFile file, req.body.value, (err) ->
       if err
         console.log "error writing to file:", err
-        res.send 500
+        res.sendStatus 500
       else
-        res.send 200
+        res.sendStatus 200
 
-app.del "/file/:file", (req, res) ->
+app.delete "/file/:file", (req, res) ->
   file = src(req.params.file)
   console.log "deleting", file
   fs.unlink file, (err) ->
     if err
       console.log "error deleting file:", err
-      res.send 500
+      res.sendStatus 500
     else
-      res.send 200
+      res.sendStatus 200
 
 app.post "/revert/:file", (req, res) ->
   file = src(req.params.file)
   console.log "reverting", file
   cmd = "git reset HEAD "+file+"; git checkout -- "+file
   exec cmd, {cwd: srcPath}, (error, stdout, stderr) ->
-    sys.print "stderr:", stderr if error
+    util.print "stderr:", stderr if error
     res.send stdout
 
 # generic way to allow 'get action file' and 'post action file? value'
@@ -178,7 +174,7 @@ compile = (req, res, file, success) ->
     console.log "compiling:", cmd
     exec cmd, (error, stdout, stderr) ->
       if error
-        res.send 500, stderr
+        res.sendStatus 500, stderr
       else
         success(tmpPath)
 
@@ -188,7 +184,7 @@ app.handleFile "/result", {}, (req, res, file) ->
     console.log cmd
     exec cmd+" 2>&1", {cwd: srcPath}, (error, stdout, stderr) ->
       if error
-        res.send 500, stdout
+        res.sendStatus 500, stdout
       else
         res.send stdout
   writeSpec = () ->
@@ -211,7 +207,7 @@ app.handleFile "/run", {}, (req, res, file) ->
 app.post "/shell", (req, res) ->
   exec req.body.cmd, cwd: "./tmp", (error, stdout, stderr) ->
     if error
-      res.send 500, stderr
+      res.sendStatus 500, stderr
     else
       res.send stdout
 
@@ -247,7 +243,7 @@ app.post "/spec/:type", (req, res) ->
     dot.stdout.pipe ps
   else
     console.log "unknown type"
-    res.send 500, "unknown type"
+    res.sendStatus 500, "unknown type"
     return
   spec.on "close", (code) ->
     if code isnt 0
