@@ -7,21 +7,21 @@
     "start": "./node_modules/coffeescript/bin/coffee server.coffee"
   },
   "dependencies": {
-    "body-parser": "^1.18.3",
+    "body-parser": "^1.19.0",
     "bower": "^1.8.8",
-    "coffeescript": "^2.3.2",
-    "compression": "^1.7.3",
-    "connect-assets": "~5.4.0",
+    "coffeescript": "^2.5.1",
+    "compression": "^1.7.4",
+    "connect-assets": "^6.0.1",
     "express": "~4.16.4",
-    "express-session": "^1.15.6",
+    "express-session": "^1.17.0",
     "eyes": "~0.1.8",
     "method-override": "^3.0.0",
     "pause-stream": "0.0.11",
-    "pug": "^2.0.3",
+    "pug": "^2.0.4",
     "socket.io": "~2.1.1",
-    "stylus": "~0.54.5",
+    "stylus": "^0.54.7",
     "tmp": "0.0.33",
-    "xml2js": "~0.4.19"
+    "xml2js": "^0.4.23"
   },
   "devDependencies": {}
 }
